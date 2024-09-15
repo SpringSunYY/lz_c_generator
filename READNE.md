@@ -167,27 +167,50 @@ hello , ${name} !
 
 ##### 3.4 输出结果
 
+在Main.class下面新增方法，测试模版：
+
 ```java
-@Test
-public void test1() throws IOException {
-    //设置velocity资源加载器
-    Properties prop = new Properties();
-    prop.put("file.resource.loader.class", "org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader");
-    Velocity.init(prop);
+public void test01() throws Exception {
+        //设置velocity资源加载器
+        Properties prop = new Properties();
+        prop.put("file.resource.loader.class", "org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader");
+        Velocity.init(prop);
 
-//创建Velocity容器
-VelocityContext context = new VelocityContext();
-context.put("name", "zhangsan");
-//加载模板
-Template tpl = Velocity.getTemplate("vms/demo1.vm", "UTF-8");
+        //创建Velocity容器
+        VelocityContext context = new VelocityContext();
+        context.put("name", "荔枝");
+        //加载模板
+        Template tpl = Velocity.getTemplate("vm/demo.html.vm", "UTF-8");
 
-FileWriter fw  = new FileWriter("D:\\work\\workspace\\velocity\\velocity_01\\src\\main\\resources\\html\\demo1.html");
-//合并数据到模板
-tpl.merge(context, fw);
+        //文件输出位置
+        String projectPath = System.getProperty("user.dir");
+        String outputPath = projectPath + File.separator + "src" + File.separator + "main" + File.separator + "resources" + File.separator + "generated" + File.separator + "demo.html";
+        // 创建文件对象
+        File outputFile = new File(outputPath);
 
-//释放资源
-fw.close();
-}
+        // 创建目录
+        File parentDir = outputFile.getParentFile();
+        if (!parentDir.exists()) {
+            parentDir.mkdirs();
+        }
+
+        // 创建文件写入器
+        FileWriter fw = new FileWriter(outputFile);
+        //合并数据到模板
+        tpl.merge(context, fw);
+        //释放资源
+        fw.close();
+    }
 ```
 
+![image-20240915213509158](./assets/image-20240915213509158.png)
 
+#### 4.运行原理
+
+​		Velocity解决了如何在后台程序和网页之间传递数据的问题，后台代码和视图之间相互独立，一方的修改不影响另一方 .
+
+​		他们之间是通过环境变量（Context）来实现的，网页制作一方和后台程序一方相互约定好对所传递变量的命名约定，比如上个程序例子中的site, name变量，它们在网页上就是$name ,$site 。
+
+​		只要双方约定好了变量名字，那么双方就可以独立工作了。无论页面如何变化，只要变量名不变，那么后台程序就无需改动，前台网页也可以任意由网页制作人员修改。这就是Velocity的工作原理。
+
+​		![](./assets/%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86.drawio.png)

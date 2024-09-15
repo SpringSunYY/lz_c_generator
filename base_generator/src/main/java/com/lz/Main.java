@@ -11,7 +11,11 @@ import java.util.Properties;
 
 public class Main {
     public static void main(String[] args) throws Exception {
-//        System.out.println("Hello world!");
+        Main main = new Main();
+        main.test01();
+    }
+
+    public void test01() throws Exception {
         //设置velocity资源加载器
         Properties prop = new Properties();
         prop.put("file.resource.loader.class", "org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader");
@@ -25,7 +29,7 @@ public class Main {
 
         //文件输出位置
         String projectPath = System.getProperty("user.dir");
-        String outputPath = projectPath + File.separator + "resources" + File.separator + "generated" + File.separator + "demo.html";
+        String outputPath = projectPath + File.separator + "src" + File.separator + "main" + File.separator + "resources" + File.separator + "generated" + File.separator + "demo.html";
         // 创建文件对象
         File outputFile = new File(outputPath);
 
@@ -34,7 +38,9 @@ public class Main {
         if (!parentDir.exists()) {
             parentDir.mkdirs();
         }
-        FileWriter fw = new FileWriter(outputPath);
+
+        // 创建文件写入器
+        FileWriter fw = new FileWriter(outputFile);
         //合并数据到模板
         tpl.merge(context, fw);
         //释放资源
