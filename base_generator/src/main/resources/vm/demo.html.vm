@@ -5,8 +5,17 @@
     <title>Title</title>
 </head>
 <body>
-
-hello , ${name} !
-
+    ##因为刚才已经合并name
+hello , ${name}!
+    #*
+     这里已经重新
+     设置name
+    *#
+    #set($name="荔枝1")
+Hello,${name}
+    #**
+     文档注释内容1
+     文档注释内容2
+     *#
 </body>
 </html>
