@@ -228,7 +228,8 @@ VTL的语句分为4大类：**注释** , **非解析内容** , **引用**和**�
 ##### 1. **变量（Variables）**
 VTL中的变量使用 `${}` 语法表示。通过将数据对象传递到`VelocityContext`，可以在模板中使用这些对象的属性或方法。
 
-###### 示例：
+示例：
+
 ```java
 #set($name = "荔枝1")
 Hello, ${name}!
@@ -267,60 +268,308 @@ VTL支持三种类型的注释：单行注释和多行注释。注释的内容�
 *#
 ```
 
+##### 3.**变量进阶**
+
+###### 3.1.引用变量
+
+引用语句就是对引擎上下文对象中的属性进行操作。语法方面分为常规语法($属性)和正规语法(${属性})。
+
+语法
+
+```
+$变量名, 若上下文中没有对应的变量，则输出字符串"$变量名"
+${变量名},若上下文中没有对应的变量，则输出字符串"${变量名}" 
+$!变量名, 若上下文中没有对应的变量，则输出空字符串"" 
+$!{变量名}, 若上下文中没有对应的变量，则输出空字符串""
+```
+
+示例
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    ##因为刚才已经合并name
+hello , ${name}!
+    #*
+     这里已经重新
+     设置name
+    *#
+###set($name="荔枝1")
+##Hello,${name}
+    #**
+     文档注释内容1
+     文档注释内容2
+     *#
+<h1>----------------------------</h1>
+<h1>引用变量</h1>
+常规用法：$name<br>
+正规用法：${name}<br>
+
+##如果获取的变量不存在，表达式会原样展示，如果不想展示，可以使用$!变量名
+没有变量：${name1}<br>
+常规用法：$name1<br>
+常规用法：$!name<br>
+正规用法：$!{name}<br>
+</body>
+</html>
+```
 
 
-##### 3. **赋值指令（Set Directive）**
 
-`#set` 指令用于给变量赋值。你可以通过它来初始化或者更改变量的值。
+###### 3.2.属性引用
 
-###### 示例：
+属性引用可以把他理解为一个类的变量为public，直接调用这个变量或者理解为一个map类型，key——value。
+
+语法：
+
+```
+$变量名.属性, 	若上下文中没有对应的变量，则输出字符串"$变量名.属性"
+${变量名.属性}	若上下文中没有对应的变量，则输出字符串"${变量名.属性}"
+$!变量名.属性	若上下文中没有对应的变量，则输出字符串""
+$!{变量名.属性}	若上下文中没有对应的变量，则输出字符串""
+```
+
+实现
+
+首先创建一个用户类作为我们的变量：
+
 ```java
-#set($greeting = "Hello")
-#set($name = "Velocity")
-${greeting}, ${name}!
-```
-输出：
-```
-Hello, Velocity!
+public class UserInfo {
+    private String username;
+    private String password;
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+}
+
 ```
 
-##### 4. **条件语句（Conditional Statements）**
+在容器中添加用户信息：
+
+```java
+        //用户信息
+        UserInfo userInfo = new UserInfo();
+        userInfo.setUsername("YY");
+        userInfo.setPassword("YYLZ");
+        context.put("userInfo",userInfo);
+```
+
+事例：
+
+```html
+<h1>----------------------------</h1>
+<h1>引用属性</h1>
+常规语法 : $userInfo.username --- $userInfo.password
+<br>
+正规语法 : ${userInfo.username} --- ${userInfo.password}
+```
+
+###### 3.3.方法引用
+
+方法引用实际就是指方法调用操作，关注点**返回值**和**参数** , 方法的返回值将输出到最终结果中，而他这个方法也就是你传入的变量所拥有的方法。
+
+语法：
+
+```
+$变量名.方法([入参1[, 入参2]*]?), 常规写法
+${变量名.方法([入参1[, 入参2]*]?)}, 正规写法
+ 
+$!变量名.方法([入参1[, 入参2]*]?), 常规写法
+$!{变量名.方法([入参1[, 入参2]*]?)}, 正规写法
+```
+
+实现：
+
+```html
+<h1>----------------------------</h1>
+<h1>方法属性</h1>
+<h2>判断常过来的name是否为空</h2>
+${name.isEmpty()}<br>
+<h2>根据,分割name</h2>
+${name.split(",")}<br>
+<h2>获取用户名</h2>
+${userInfo.getUsername()}
+</body>
+```
+
+
+
+##### 4. **指令**
+
+指令主要用于定义重用模块、引入外部资源、流程控制。指令以 `#` 作为起始字符。
+
+###### 4.1.set
+
+`#set` 指令用于给变量赋值。你可以通过它来初始化或者更改变量的值。可以在页面中声明定义变量。
+
+语法：
+
+```
+#set($变量 = 值)
+```
+
+示例：
+
+```java
+<h1>-------------------</h1>
+<h1>指令</h1>
+<h2>set定义</h2>
+
+    #set($str = "hello world")
+    #set($int = 1)
+    #set($arr = [1,2])
+    #set($boolean = true)
+    #set($map = {"key1":"value1", "key2":"value2"})
+
+    ## 在字符串中也可以引用之前定义过的变量
+    #set($str2 = "$str , how are you !")
+    #set($str3 = '$str , how are you !')
+
+<h2>获取set指令定义的变量</h2>
+str: ${str}<br>
+int: ${int}<br>
+arr: ${arr}<br>
+boolean: ${boolean}<br>
+mar: ${map.key1}--${map.key2}<br>
+str2: ${str2}<br>
+str3: ${str3}<br>
+```
+###### 4.2 **条件语句**
+
 VTL支持条件语句，例如 `#if`、`#else` 和 `#elseif`，用于实现基本的逻辑判断。
 
-###### 示例：
-```java
-#set($age = 25)
-#if($age >= 18)
-   You are an adult.
+语法：
+
+```
+#if(判断条件)
+  .........
+#elseif(判断条件)
+  .........
 #else
-   You are a minor.
-#end
-```
-输出：
-```
-You are an adult.
+  .........
+#end 
 ```
 
-##### 5. **循环语句（Loops）**
-VTL 提供 `#foreach` 指令来遍历集合或数组，生成动态内容。可以用来遍历列表、数组等数据结构。
+示例：
 
-###### 示例：
 ```java
-#set($items = ["Apple", "Banana", "Cherry"])
-<ul>
+<h2>------------------</h2>
+<h2>条件语句</h2>
+    #if(${name.isEmpty()})
+    我没有名字<br>
+    #elseif(!${name.isEmpty()})
+    我的名字是：${name}
+    #end
+<br>
+    #if(${userInfo.getPassword().equals("YYLZ")})
+    密码正确
+    #end
+```
+###### 4.3. **循环语句**
+使用 `#foreach` 指令来遍历集合或数组，生成动态内容。可以用来遍历列表、数组等数据结构。
+
+格式：
+
+```
 #foreach($item in $items)
-   <li>${item}</li>
+    ..........
+    [#break]
 #end
-</ul>
 ```
-输出：
+
+$items : 需要遍历的对象或者集合
+
+如果items的类型为map集合, 那么遍历的是map的value
+
+$item : 变量名称, 代表遍历的每一项
+
+#break : 退出循环
+
+内置属性 :
+
+$foreach.index : 获取遍历的索引 , 从0开始
+
+$foreach.count : 获取遍历的次数 , 从1开始
+
+hasNext()判断是否有下一个元素
+
+示例（遍历数组）：
+
+创建一个list数组来作为遍历数据：
+
+```java
+        //用户数组
+        List<UserInfo> userInfoList = new ArrayList<>();
+        for (int i = 0; i < 10; i++) {
+            UserInfo info = new UserInfo();
+            info.setUsername("荔枝"+i);
+            info.setPassword("YY"+i);
+            userInfoList.add(info);
+        }
+        context.put("userInfoList",userInfoList);
+```
+做一个表格来遍历userInfoList：
+
 ```html
-<ul>
-   <li>Apple</li>
-   <li>Banana</li>
-   <li>Cherry</li>
-</ul>
+<h2>------------------</h2>
+<h2>循环</h2>
+<h3>遍历数组</h3>
+<table border="1px" align="left">
+    <tr>
+        <td>编号</td>
+        <td>用户名</td>
+        <td>密码</td>
+        <td>操作</td>
+    </tr>
+    #foreach($user in $userInfoList)
+        <tr>
+            <td>${foreach.index}</td>
+            <td>${user.username}</td>
+            <td>${user.password}</td>
+            <td>
+                <a href="">编辑</a>
+                <a href="">删除</a>
+            </td>
+        </tr>
+    #end
+</table>
 ```
+
+事例（遍历map）：
+
+```html
+<h2>------------------</h2>
+<h3>遍历map集合</h3>
+<h4>遍历值</h4>
+    #foreach($value in $map)
+        $value<br>
+    #end
+<h2>------------------</h2>
+<h3>遍历键值对</h3>
+    #foreach($entry in $map.entrySet())
+        $entry.key --- $entry.value<br>
+    #end
+```
+
+
 
 ##### 6. **方法调用（Method Calls）**
 VTL允许通过模板调用Java对象的方法。传递给`VelocityContext`的Java对象可以在模板中直接调用其方法。

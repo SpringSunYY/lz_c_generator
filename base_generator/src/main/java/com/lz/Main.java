@@ -1,12 +1,15 @@
 package com.lz;
 
 import cn.hutool.core.io.FileUtil;
+import com.lz.demoin.UserInfo;
 import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.Velocity;
 
 import java.io.File;
 import java.io.FileWriter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 public class Main {
@@ -23,7 +26,24 @@ public class Main {
 
         //创建Velocity容器
         VelocityContext context = new VelocityContext();
-        context.put("name", "荔枝");
+        context.put("name", "荔枝,荔枝软件开发工作室");
+
+        //用户信息
+        UserInfo userInfo = new UserInfo();
+        userInfo.setUsername("YY");
+        userInfo.setPassword("YYLZ");
+        context.put("userInfo",userInfo);
+
+        //用户数组
+        List<UserInfo> userInfoList = new ArrayList<>();
+        for (int i = 0; i < 10; i++) {
+            UserInfo info = new UserInfo();
+            info.setUsername("荔枝"+i);
+            info.setPassword("YY"+i);
+            userInfoList.add(info);
+        }
+        context.put("userInfoList",userInfoList);
+
         //加载模板
         Template tpl = Velocity.getTemplate("vm/demo.html.vm", "UTF-8");
 

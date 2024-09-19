@@ -11,11 +11,105 @@ hello , ${name}!
      这里已经重新
      设置name
     *#
-    #set($name="荔枝1")
-Hello,${name}
+    ###set($name="荔枝1")
+    ##Hello,${name}
     #**
      文档注释内容1
      文档注释内容2
      *#
+    #***
+     <h1>----------------------------</h1>
+     <h1>引用变量</h1>
+     常规用法：$name<br>
+     正规用法：${name}<br>
+
+     ##如果获取的变量不存在，表达式会原样展示，如果不想展示，可以使用$!变量名
+     没有变量：${name1}<br>
+     常规用法：$name1<br>
+     常规用法：$!name<br>
+     正规用法：$!{name}<br>
+
+     <h1>----------------------------</h1>
+     <h1>引用属性</h1>
+     常规语法 : $userInfo.username --- $userInfo.password
+     <br>
+     正规语法 : ${userInfo.username} --- ${userInfo.password}
+
+     <h1>----------------------------</h1>
+     <h1>方法属性</h1>
+     <h2>判断常过来的name是否为空</h2>
+     ${name.isEmpty()}<br>
+     <h2>根据,分割name</h2>
+     ${name.split(",")}<br>
+     <h2>获取用户名</h2>
+     ${userInfo.getUsername()}
+     *#
+<h1>-------------------</h1>
+<h1>指令</h1>
+<h2>set定义</h2>
+
+    #set($str = "hello world")
+    #set($int = 1)
+    #set($arr = [1,2])
+    #set($boolean = true)
+    #set($map = {"key1":"value1", "key2":"value2"})
+
+    ## 在字符串中也可以引用之前定义过的变量
+    #set($str2 = "$str , how are you !")
+    #set($str3 = '$str , how are you !')
+
+<h2>获取set指令定义的变量</h2>
+str: ${str}<br>
+int: ${int}<br>
+arr: ${arr}<br>
+boolean: ${boolean}<br>
+mar: ${map.key1}--${map.key2}<br>
+str2: ${str2}<br>
+str3: ${str3}<br>
+<h2>------------------</h2>
+<h2>条件语句</h2>
+    #if(${name.isEmpty()})
+    我没有名字<br>
+    #elseif(!${name.isEmpty()})
+    我的名字是：${name}
+    #end
+<br>
+    #if(${userInfo.getPassword().equals("YYLZ")})
+    密码正确
+    #end
+
+<h2>------------------</h2>
+<h2>循环</h2>
+<h3>遍历数组</h3>
+<table border="1px" align="left">
+    <tr>
+        <td>编号</td>
+        <td>用户名</td>
+        <td>密码</td>
+        <td>操作</td>
+    </tr>
+    #foreach($user in $userInfoList)
+        <tr>
+            <td>${foreach.index}</td>
+            <td>${user.username}</td>
+            <td>${user.password}</td>
+            <td>
+                <a href="">编辑</a>
+                <a href="">删除</a>
+            </td>
+        </tr>
+    #end
+</table>
+<h2>------------------</h2>
+<h3>遍历map集合</h3>
+<h4>遍历值</h4>
+    #foreach($value in $map)
+        $value<br>
+    #end
+<h2>------------------</h2>
+<h3>遍历键值对</h3>
+    #foreach($entry in $map.entrySet())
+        $entry.key --- $entry.value<br>
+    #end
 </body>
 </html>
