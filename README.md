@@ -228,13 +228,14 @@ VTL的语句分为4大类：**注释** , **非解析内容** , **引用**和**�
 ##### 1. **变量（Variables）**
 VTL中的变量使用 `${}` 语法表示。通过将数据对象传递到`VelocityContext`，可以在模板中使用这些对象的属性或方法。
 
-示例：
+**示例**：
 
 ```java
 #set($name = "荔枝1")
 Hello, ${name}!
 ```
-输出：
+**输出**：
+
 ```
 hello , 荔枝 !
 
@@ -274,7 +275,7 @@ VTL支持三种类型的注释：单行注释和多行注释。注释的内容�
 
 引用语句就是对引擎上下文对象中的属性进行操作。语法方面分为常规语法($属性)和正规语法(${属性})。
 
-语法
+**语法**：
 
 ```
 $变量名, 若上下文中没有对应的变量，则输出字符串"$变量名"
@@ -283,7 +284,7 @@ $!变量名, 若上下文中没有对应的变量，则输出空字符串""
 $!{变量名}, 若上下文中没有对应的变量，则输出空字符串""
 ```
 
-示例
+**示例**：
 
 ```html
 <!DOCTYPE html>
@@ -325,7 +326,7 @@ hello , ${name}!
 
 属性引用可以把他理解为一个类的变量为public，直接调用这个变量或者理解为一个map类型，key——value。
 
-语法：
+**语法**：
 
 ```
 $变量名.属性, 	若上下文中没有对应的变量，则输出字符串"$变量名.属性"
@@ -334,7 +335,7 @@ $!变量名.属性	若上下文中没有对应的变量，则输出字符串""
 $!{变量名.属性}	若上下文中没有对应的变量，则输出字符串""
 ```
 
-实现
+**实现**：
 
 首先创建一个用户类作为我们的变量：
 
@@ -372,7 +373,7 @@ public class UserInfo {
         context.put("userInfo",userInfo);
 ```
 
-事例：
+**事例**：
 
 ```html
 <h1>----------------------------</h1>
@@ -386,7 +387,7 @@ public class UserInfo {
 
 方法引用实际就是指方法调用操作，关注点**返回值**和**参数** , 方法的返回值将输出到最终结果中，而他这个方法也就是你传入的变量所拥有的方法。
 
-语法：
+**语法**：
 
 ```
 $变量名.方法([入参1[, 入参2]*]?), 常规写法
@@ -396,7 +397,7 @@ $!变量名.方法([入参1[, 入参2]*]?), 常规写法
 $!{变量名.方法([入参1[, 入参2]*]?)}, 正规写法
 ```
 
-实现：
+**实现**：
 
 ```html
 <h1>----------------------------</h1>
@@ -420,13 +421,13 @@ ${userInfo.getUsername()}
 
 `#set` 指令用于给变量赋值。你可以通过它来初始化或者更改变量的值。可以在页面中声明定义变量。
 
-语法：
+**语法**：
 
 ```
 #set($变量 = 值)
 ```
 
-示例：
+**示例**：
 
 ```java
 <h1>-------------------</h1>
@@ -456,7 +457,7 @@ str3: ${str3}<br>
 
 VTL支持条件语句，例如 `#if`、`#else` 和 `#elseif`，用于实现基本的逻辑判断。
 
-语法：
+**语法**：
 
 ```
 #if(判断条件)
@@ -468,7 +469,7 @@ VTL支持条件语句，例如 `#if`、`#else` 和 `#elseif`，用于实现基�
 #end 
 ```
 
-示例：
+**示例**：
 
 ```java
 <h2>------------------</h2>
@@ -486,7 +487,7 @@ VTL支持条件语句，例如 `#if`、`#else` 和 `#elseif`，用于实现基�
 ###### 4.3. **循环语句**
 使用 `#foreach` 指令来遍历集合或数组，生成动态内容。可以用来遍历列表、数组等数据结构。
 
-格式：
+**格式：**
 
 ```
 #foreach($item in $items)
@@ -511,7 +512,7 @@ $foreach.count : 获取遍历的次数 , 从1开始
 
 hasNext()判断是否有下一个元素
 
-示例（遍历数组）：
+**示例**（遍历数组）：
 
 创建一个list数组来作为遍历数据：
 
@@ -553,7 +554,7 @@ hasNext()判断是否有下一个元素
 </table>
 ```
 
-事例（遍历map）：
+**事例**（遍历map）：
 
 ```html
 <h2>------------------</h2>
@@ -571,69 +572,169 @@ hasNext()判断是否有下一个元素
 
 
 
-##### 6. **方法调用（Method Calls）**
-VTL允许通过模板调用Java对象的方法。传递给`VelocityContext`的Java对象可以在模板中直接调用其方法。
+###### 4.4.宏指令
 
-###### 示例：
-```java
-#set($person = $user.getName())
-Hello, ${person}!
-```
-这里 `$user` 是从Java代码中传递的对象，通过调用其 `getName()` 方法获取用户的名字。
+**作用 :** 定义重用模块（可带参数）
 
-##### 7. **宏（Macros）**
-`#macro` 指令用于定义可以重复使用的模板块。通过定义宏，可以减少重复代码，提高模板的可读性。
+**语法 :**
 
-###### 示例：
-```java
-#macro(greet $name)
-    Hello, $name!
+定义语法
+
+```html
+#macro(宏名 [$arg]?)
+   .....
 #end
-
-#greet("John")
-#greet("Jane")
-```
-输出：
-```
-Hello, John!
-Hello, Jane!
 ```
 
-##### 8. **自定义指令（Directives）**
-除了常见的 `#set`、`#if`、`#foreach` 等指令，VTL允许扩展自定义指令，用于处理更复杂的场景，比如动态生成表格或代码块。
+**示例 :**
 
-##### 9. **文本输出（Text Output）**
-任何未被括号包围的文本都会被直接输出。VTL可以生成HTML、XML、配置文件或Java代码等多种格式的文本文件。
+```html
 
-###### 示例：
-
-```java
-#set($className = "User")
-public class ${className} {
-    private String name;
-    private int age;
-}
-```
-输出：
-```java
-public class User {
-    private String name;
-    private int age;
-}
-```
-
-##### 10. **逃逸字符（Escaping Characters）**
-如果你想输出`${}`或`#`等VTL特殊字符，而不想让它们被解析，可以使用转义符 `\`。
-
-###### 示例：
-```java
-\${this is not a variable}
-```
-输出：
-```
-${this is not a variable}
+    ##定义宏指令
+    #macro(table $userList)
+    <table border="1px" align="center">
+        <tr>
+            <td>编号</td>
+            <td>用户名</td>
+            <td>密码</td>
+            <td>操作</td>
+        </tr>
+        #foreach($user in $userList)
+            <tr>
+                <td>${foreach.index}</td>
+                <td>${user.username}</td>
+                <td>${user.password}</td>
+                <td>
+                    <a href="">编辑</a>
+                    <a href="">删除</a>
+                </td>
+            </tr>
+        #end
+    #end
+    <h1 style="margin: auto; text-align: center">使用宏指令的事例--------------</h1>
+    #table($userInfoList)
+    #table($userInfoList)
 ```
 
-##### 总结
+![image-20240922230443640](./assets/image-20240922230443640.png)
 
-VTL 提供了灵活且简洁的语法，用于生成动态的Java代码或其他文本格式。通过使用 VTL，你可以轻松定义模板逻辑、控制代码生成的流程，以及创建可复用的模板组件。Velocity作为一个轻量级、易用且扩展性强的模板引擎，广泛应用于代码生成器、Web页面生成和其他动态文本生成场景。
+##### 5.引入资源
+
+###### 5.1.#include
+
+作用 : 引入外部资源 , 引入的资源不会被引擎所解析
+
+**语法** : #include(resource)
+
+- resource可以为**单引号或双引号的字符串**，也可以为**$变量**，内容为外部资源路径。
+- 注意 : 路径如果为相对路径，则以引擎配置的文件加载器加载路径作为参考
+
+**事例**：
+
+​		首先创建一个文件在demo同级目录创建一个文件demo2.html.vm
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    ##因为刚才已经合并name
+hello , ${name}!
+
+</body>
+</html>
+```
+
+```html
+<h1>引入资源------------------</h1>
+    ##    因为我们这里是使用文件加载器加载路径，所以需要和文件加载器路径保持一致
+    #include("vm/demo2.html.vm")
+```
+
+![image-20240922222325354](./assets/image-20240922222325354.png)
+
+
+
+###### 5.2.\#parse
+
+**作用 :** 引入外部资源 , 引入的资源将被引擎所解析
+
+**语法 :** `#parse(resource)`
+
+> - resource可以为**单引号或双引号的字符串**，也可以为**$变量**，内容为外部资源路径。
+> - 注意 : 路径如果为相对路径，则以引擎配置的文件加载器加载路径作为参考系
+
+**事例**：
+
+```html
+<h1>引入资源parse------------------</h1>
+    #parse("vm/demo2.html.vm")
+```
+
+![image-20240922222738171](./assets/image-20240922222738171.png)
+
+
+
+###### 5.3.\#define
+
+**作用 :** `定义重用模块（不带参数）`
+
+**语法 :**
+
+```html
+#define($模块名称)
+	模块内容
+#end
+```
+
+**事例**：
+
+```html
+#define($table)
+##<h1>定义模块的事例--------------</h1>
+<table border="1px" align="center" >
+    <tr>
+        <td>编号</td>
+        <td>用户名</td>
+        <td>密码</td>
+        <td>操作</td>
+    </tr>
+    #foreach($user in $userInfoList)
+        <tr>
+            <td>${foreach.index}</td>
+            <td>${user.username}</td>
+            <td>${user.password}</td>
+            <td>
+                <a href="">编辑</a>
+                <a href="">删除</a>
+            </td>
+        </tr>
+    #end
+</table>
+#end
+<h1 style="margin: auto; text-align: center">使用模块的事例--------------</h1>
+$table
+$table
+```
+
+![image-20240922224354804](./assets/image-20240922224354804.png)
+
+
+
+###### 5.4.\#evaluate
+
+**作用 :** 动态计算 , 动态计算可以让我们在字符串中使用变量
+
+**语法 :** `#evalute("计算语句")`
+
+**示例 :**
+
+```html
+<h1 style="margin: auto; text-align: center">动态计算---------------</h1>
+    #evaluate("#if($name=='YY') <h1>YY</h1>  #else
+    <h1>荔枝</h1> #end")
+```
+

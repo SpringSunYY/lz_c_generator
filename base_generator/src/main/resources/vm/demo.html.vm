@@ -78,38 +78,95 @@ str3: ${str3}<br>
     密码正确
     #end
 
-<h2>------------------</h2>
-<h2>循环</h2>
-<h3>遍历数组</h3>
-<table border="1px" align="left">
-    <tr>
-        <td>编号</td>
-        <td>用户名</td>
-        <td>密码</td>
-        <td>操作</td>
-    </tr>
-    #foreach($user in $userInfoList)
+    ##<h2>------------------</h2>
+    ##<h2>循环</h2>
+    ##<h3>遍历数组</h3>
+    ##<table border="1px" align="left">
+    ##    <tr>
+    ##        <td>编号</td>
+    ##        <td>用户名</td>
+    ##        <td>密码</td>
+    ##        <td>操作</td>
+    ##    </tr>
+    ##    #foreach($user in $userInfoList)
+    ##        <tr>
+    ##            <td>${foreach.index}</td>
+    ##            <td>${user.username}</td>
+    ##            <td>${user.password}</td>
+    ##            <td>
+    ##                <a href="">编辑</a>
+    ##                <a href="">删除</a>
+    ##            </td>
+    ##        </tr>
+    ##    #end
+    ##</table>
+    ##<h2>------------------</h2>
+    ##<h3>遍历map集合</h3>
+    ##<h4>遍历值</h4>
+    ##    #foreach($value in $map)
+    ##        $value<br>
+    ##    #end
+    ##<h1>引入资源------------------</h1>
+    ##    ##    因为我们这里是使用文件加载器加载路径，所以需要和文件加载器路径保持一致
+    ##    #include("vm/demo2.html.vm")
+    ##
+    ##<h1>引入资源parse------------------</h1>
+    ##    #parse("vm/demo2.html.vm")
+
+    ##    #define($table)
+    ##        ##<h1>定义模块的事例--------------</h1>
+    ##    <table border="1px" align="center">
+    ##        <tr>
+    ##            <td>编号</td>
+    ##            <td>用户名</td>
+    ##            <td>密码</td>
+    ##            <td>操作</td>
+    ##        </tr>
+    ##        #foreach($user in $userInfoList)
+    ##            <tr>
+    ##                <td>${foreach.index}</td>
+    ##                <td>${user.username}</td>
+    ##                <td>${user.password}</td>
+    ##                <td>
+    ##                    <a href="">编辑</a>
+    ##                    <a href="">删除</a>
+    ##                </td>
+    ##            </tr>
+    ##        #end
+    ##    </table>
+    ##    #end
+    ##<h1 style="margin: auto; text-align: center">使用模块的事例--------------</h1>
+    ##    $table
+    ##    $table
+    ##
+    ##<h1 style="margin: auto; text-align: center">动态计算---------------</h1>
+    ##    #evaluate("#if($name=='YY') <h1>YY</h1>  #else
+    ##    <h1>荔枝</h1> #end")
+    ##<h1>定义模块的事例--------------</h1>
+    ##定义宏指令
+    #macro(table $userList)
+    <table border="1px" align="center">
         <tr>
-            <td>${foreach.index}</td>
-            <td>${user.username}</td>
-            <td>${user.password}</td>
-            <td>
-                <a href="">编辑</a>
-                <a href="">删除</a>
-            </td>
+            <td>编号</td>
+            <td>用户名</td>
+            <td>密码</td>
+            <td>操作</td>
         </tr>
+        #foreach($user in $userList)
+            <tr>
+                <td>${foreach.index}</td>
+                <td>${user.username}</td>
+                <td>${user.password}</td>
+                <td>
+                    <a href="">编辑</a>
+                    <a href="">删除</a>
+                </td>
+            </tr>
+        #end
     #end
+    <h1 style="margin: auto; text-align: center">使用宏指令的事例--------------</h1>
+    #table($userInfoList)
+    #table($userInfoList)
 </table>
-<h2>------------------</h2>
-<h3>遍历map集合</h3>
-<h4>遍历值</h4>
-    #foreach($value in $map)
-        $value<br>
-    #end
-<h2>------------------</h2>
-<h3>遍历键值对</h3>
-    #foreach($entry in $map.entrySet())
-        $entry.key --- $entry.value<br>
-    #end
 </body>
 </html>
