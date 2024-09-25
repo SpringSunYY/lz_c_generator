@@ -772,9 +772,7 @@ $table
 
 
 
-### 二、代码实现
-
-#### 1、步骤分析
+### 二、步骤分析
 
 1. 获取数据库表字段信息：
    - 获取到数据库需要生成的表的基本信息，表名、列名称、数据类型、注释等等。
@@ -787,3 +785,370 @@ $table
 4. 完善项目：
    - 完善项目，优化项目的功能，自己可以快速使用。
    - 理解项目扩展，项目的可扩展点。
+
+
+
+### 三、数据库表信息
+
+#### 1、测试表
+
+​     代码生成肯定需要我们获取到数据库的表信息，这样才知道具体要生成的内容是什么，所以首先需要一张表来获取帮助我们理解表都有哪些信息。
+
+​		以下使用一个简洁的图书信息表来作为我们的演示：
+
+**图书信息表：book_info**
+
+| 字段名        | 类型          | 键类型 | 描述     |
+| ------------- | ------------- | ------ | -------- |
+| book_id       | bigint        | 主键   | 自增     |
+| book_name     | varchar(64)   |        | 图书名称 |
+| book_author   | varchar(64)   |        | 作者     |
+| book_total    | int           |        | 总数量   |
+| book_price    | float（10,2） |        | 价格     |
+| book_image    | varchar(2048) |        | 图片     |
+| book_shelf_id | bigint        |        | 书架     |
+| create_by     | varchar(64)   |        | 创建人   |
+| is_delete     | boolan        |        | 删除     |
+| create_time   | datetime      |        | 创建时间 |
+| update_time   | datetime      |        | 更新时间 |
+
+```sql
+CREATE TABLE book_info (
+    book_id BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '主键',
+    book_name VARCHAR(64) NOT NULL COMMENT '图书名称',
+    book_author VARCHAR(64) COMMENT '作者',
+    book_total INT COMMENT '总数量',
+    book_price FLOAT(10, 2) COMMENT '价格',
+    book_image VARCHAR(2048) COMMENT '图片',
+    book_shelf_id BIGINT COMMENT '书架',
+    create_by VARCHAR(64) COMMENT '创建人',
+    is_delete BOOLEAN DEFAULT FALSE COMMENT '删除标志',
+    create_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间'
+) COMMENT='图书信息表';
+
+```
+
+
+
+#### 2、获取表信息
+
+​		获取表的信息，表的字段列信息。但是怎么获取呢，我也不知道，但是我们可以去问问ai教我们怎么获取表的信息。
+
+##### 获取表字段信息
+
+**具体操作**
+
+**问**：
+
+```txt
+CREATE TABLE book_info (
+    book_id BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '主键',
+    book_name VARCHAR(64) NOT NULL COMMENT '图书名称',
+    book_author VARCHAR(64) COMMENT '作者',
+    book_total INT COMMENT '总数量',
+    book_price FLOAT(10, 2) COMMENT '价格',
+    book_image VARCHAR(2048) COMMENT '图片',
+    book_shelf_id BIGINT COMMENT '书架',
+    create_by VARCHAR(64) COMMENT '创建人',
+    is_delete BOOLEAN DEFAULT FALSE COMMENT '删除标志',
+    create_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间'
+) COMMENT='图书信息表';，我这里有一份建表语句，我想通过sql查询，查询到这个表的基本信息，列信息
+```
+
+**回复**：
+
+```sql
+SELECT 
+    COLUMN_NAME AS '列名',
+    DATA_TYPE AS '数据类型',
+    CHARACTER_MAXIMUM_LENGTH AS '字符最大长度',
+    IS_NULLABLE AS '是否可为空',
+    COLUMN_DEFAULT AS '默认值',
+    COLUMN_COMMENT AS '列注释'
+FROM 
+    INFORMATION_SCHEMA.COLUMNS
+WHERE 
+    TABLE_NAME = 'book_info' 
+    AND TABLE_SCHEMA = '你的数据库名';  -- 替换为你的数据库名
+
+```
+
+![image-20240925113938789](./assets/image-20240925113938789.png)
+
+可以看到ai给的答复内容，根据此内容，可以查询到所有要的信息。
+
+**INFORMATION_SCHEMA** 是一个系统数据库，存在于大多数关系型数据库管理系统（如 MySQL、PostgreSQL、SQL Server 等）中。它提供了一组只读的视图，用于查询数据库的元数据，包括数据库、表、列、索引、权限等信息。
+
+![image-20240925114450427](./assets/image-20240925114450427.png)
+
+根据图片可以看到已经查到列名、数据类型、字符串最大长度、是否可为空、默认值和注释的信息，基本上已经满足我们所需要的信息，但是感觉还是有些不够，万一有些要用到呢，所以可以使用 " __*__ " 来查询，获取到所有的信息。 
+
+![image-20240925114847852](./assets/image-20240925114847852.png)
+
+```sql
+SELECT
+    *
+FROM
+    INFORMATION_SCHEMA.COLUMNS
+WHERE
+    TABLE_NAME = 'book_info'
+  AND TABLE_SCHEMA = 'syy_lz_generator';  -- 替换为你的数据库名
+```
+
+每个字段解释：
+
+**TABLE_CATALOG**: 表示数据库的目录，通常在 MySQL 中会是数据库的名称。
+
+**TABLE_SCHEMA**: 表示表所属的数据库（或模式）。
+
+**TABLE_NAME**: 表示表的名称，与你查询的表名（`book_info`）一致。
+
+**COLUMN_NAME**: 表示列的名称。
+
+**ORDINAL_POSITION**: 表示列在表中的位置，从 1 开始的索引值。
+
+**COLUMN_DEFAULT**: 表示列的默认值，如果没有设置默认值，则为 NULL。
+
+**IS_NULLABLE**: 表示列是否可以为 NULL。值为 'YES' 表示可以为 NULL，'NO' 表示不可以。
+
+**DATA_TYPE**: 表示列的数据类型，例如 `VARCHAR`, `INT`, `FLOAT`, `DATETIME` 等。
+
+**CHARACTER_MAXIMUM_LENGTH**: 对于字符类型（如 `VARCHAR`），表示列的最大字符长度；对于非字符类型，此字段通常为 NULL。
+
+**NUMERIC_PRECISION**: 对于数字类型（如 `FLOAT`, `DECIMAL`），表示数值的精度。
+
+**NUMERIC_SCALE**: 对于数字类型，表示小数部分的位数。
+
+**DATETIME_PRECISION**: 对于日期和时间类型，表示时间的精度（例如，毫秒）。
+
+**CHARACTER_SET_NAME**: 表示字符集名称，通常用于字符类型的列。
+
+**COLLATION_NAME**: 表示字符序列的排序规则，通常与字符集配合使用。
+
+**COLUMN_TYPE**: 表示列的具体数据类型及其属性（例如，是否有长度限制、是否为自增等）。
+
+**COLUMN_KEY**: 表示列的键类型，如 `PRI`（主键）、`UNI`（唯一键）、`MUL`（普通索引）。
+
+**EXTRA**: 额外的属性信息，例如 `auto_increment`。
+
+**PRIVILEGES**: 表示列的权限设置，例如 `select`, `insert`, `update` 等。
+
+**COLUMN_COMMENT**: 表示列的注释信息，通常用于描述列的用途。
+
+
+
+这样我们就可以直接使用as来辅助查询：
+
+```sql
+SELECT
+    TABLE_CATALOG AS '数据库目录',
+    TABLE_SCHEMA AS '数据库名',
+    TABLE_NAME AS '表名',
+    COLUMN_NAME AS '列名',
+    ORDINAL_POSITION AS '列位置',
+    COLUMN_DEFAULT AS '默认值',
+    IS_NULLABLE AS '是否可为空',
+    DATA_TYPE AS '数据类型',
+    CHARACTER_MAXIMUM_LENGTH AS '字符最大长度',
+    NUMERIC_PRECISION AS '数值精度',
+    NUMERIC_SCALE AS '数值小数位数',
+    DATETIME_PRECISION AS '日期时间精度',
+    CHARACTER_SET_NAME AS '字符集名称',
+    COLLATION_NAME AS '排序规则',
+    COLUMN_TYPE AS '列类型',
+    COLUMN_KEY AS '键类型',
+    EXTRA AS '额外信息',
+    PRIVILEGES AS '权限',
+    COLUMN_COMMENT AS '列注释'
+FROM
+    INFORMATION_SCHEMA.COLUMNS
+WHERE
+    TABLE_NAME = 'book_info'
+  AND TABLE_SCHEMA = 'syy_lz_generator';  -- 替换为你的数据库名
+
+```
+
+![image-20240925115241829](./assets/image-20240925115241829.png)
+
+##### 获取表信息
+
+```sql
+SELECT TABLE_CATALOG   AS '数据库目录',
+       TABLE_SCHEMA    AS '数据库名',
+       TABLE_NAME      AS '表名',
+       TABLE_TYPE      AS '表类型',
+       ENGINE          AS '存储引擎',
+       VERSION         AS '版本',
+       ROW_FORMAT      AS '行格式',
+       TABLE_ROWS      AS '表行数',
+       AVG_ROW_LENGTH  AS '平均行长度',
+       DATA_LENGTH     AS '数据长度',
+       MAX_DATA_LENGTH AS '最大数据长度',
+       INDEX_LENGTH    AS '索引长度',
+       DATA_FREE       AS '空闲空间',
+       AUTO_INCREMENT  AS '自增值',
+       CREATE_TIME     AS '创建时间',
+       UPDATE_TIME     AS '更新时间',
+       CHECK_TIME      AS '检查时间',
+       TABLE_COLLATION AS '表字符集',
+       CREATE_OPTIONS  AS '创建选项',
+       TABLE_COMMENT   AS '表注释'
+FROM INFORMATION_SCHEMA.TABLES
+WHERE TABLE_NAME = 'book_info'
+  AND TABLE_SCHEMA = 'syy_lz_generator'; -- 替换为你的数据库名
+```
+
+![image-20240925122134031](./assets/image-20240925122134031.png)
+
+通过这些信息，可以了解到一张表的全貌，这样就方便我们生成代码了。既然知道了表的基本信息，那么我们就可以生成Java实体和对应的功能了。
+
+#### 3、Java实体
+
+需要创建两个实体，一个实体来记录每一列信息，一个实体来记录表名称、和生成的信息，因为根据查询到的数据来看，每一个返回的值都有表名、数据库名等公共信息，可以给他们提出来，一些不需要的信息我们也不需要返回了，对我们的功能没用。
+
+**GenTable**
+
+```java
+public class GenTable {
+    public String tableName;              // 表名
+    public String tableComment;           // 表注释
+    private String className;             // 实体类名称(首字母大写)
+    private String packageName;           // 生成包路径
+    private String author;                // 作者
+    private List<GenTableColumn> columns; // 列表信息
+    private GenTableColumn pkColumn;      // 主键
+    private static final long serialVersionUID = 1L;
+
+    public String getTableName() {
+        return tableName;
+    }
+
+    public void setTableName(String tableName) {
+        this.tableName = tableName;
+    }
+
+    public String getTableComment() {
+        return tableComment;
+    }
+
+    public void setTableComment(String tableComment) {
+        this.tableComment = tableComment;
+    }
+
+    public String getClassName() {
+        return className;
+    }
+
+    public void setClassName(String className) {
+        this.className = className;
+    }
+
+    public String getPackageName() {
+        return packageName;
+    }
+
+    public void setPackageName(String packageName) {
+        this.packageName = packageName;
+    }
+
+    public String getAuthor() {
+        return author;
+    }
+
+    public void setAuthor(String author) {
+        this.author = author;
+    }
+
+    public List<GenTableColumn> getColumns() {
+        return columns;
+    }
+
+    public void setColumns(List<GenTableColumn> columns) {
+        this.columns = columns;
+    }
+
+    public GenTableColumn getPkColumn() {
+        return pkColumn;
+    }
+
+    public void setPkColumn(GenTableColumn pkColumn) {
+        this.pkColumn = pkColumn;
+    }
+}
+```
+
+
+
+**GenTableColumn**
+
+```java
+public class GenTableColumn {
+    public String columnName;                // 列名
+    public String dataType;                  // 数据类型
+    public String columnType;                // 列类型
+    public String columnComment;             // 列注释
+    private String javaType;                 // Java类型
+    private String javaField;                // Java字段
+    private String isPk;                     // 主键
+    private static final long serialVersionUID = 1L;
+
+    public String getColumnName() {
+        return columnName;
+    }
+
+    public void setColumnName(String columnName) {
+        this.columnName = columnName;
+    }
+
+    public String getDataType() {
+        return dataType;
+    }
+
+    public void setDataType(String dataType) {
+        this.dataType = dataType;
+    }
+
+    public String getColumnType() {
+        return columnType;
+    }
+
+    public void setColumnType(String columnType) {
+        this.columnType = columnType;
+    }
+
+    public String getColumnComment() {
+        return columnComment;
+    }
+
+    public void setColumnComment(String columnComment) {
+        this.columnComment = columnComment;
+    }
+
+    public String getJavaType() {
+        return javaType;
+    }
+
+    public void setJavaType(String javaType) {
+        this.javaType = javaType;
+    }
+
+    public String getJavaField() {
+        return javaField;
+    }
+
+    public void setJavaField(String javaField) {
+        this.javaField = javaField;
+    }
+
+    public String getIsPk() {
+        return isPk;
+    }
+
+    public void setIsPk(String isPk) {
+        this.isPk = isPk;
+    }
+}
+```
+
