@@ -17,7 +17,7 @@ public class GenTable {
     private String packageName;           // 生成包路径
     private String author;                // 作者
     private List<GenTableColumn> columns; // 列表信息
-    private GenTableColumn pkColumn;      // 主键
+    private String isPk;                  // 主键
     private static final long serialVersionUID = 1L;
 
     public String getTableName() {
@@ -68,11 +68,11 @@ public class GenTable {
         this.columns = columns;
     }
 
-    public GenTableColumn getPkColumn() {
-        return pkColumn;
+    public String getIsPk() {
+        return isPk;
     }
 
-    public void setPkColumn(GenTableColumn pkColumn) {
-        this.pkColumn = pkColumn;
+    public void setIsPk(String isPk) {
+        this.isPk = isPk;
     }
 }

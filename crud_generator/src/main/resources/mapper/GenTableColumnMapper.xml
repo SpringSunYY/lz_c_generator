@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.lz.crud_generator.mapper.GenTableColumnMapper">
+
+    <!-- resultMap 定义，映射到 BookInfoTableMetadata 类 -->
+    <resultMap type="GenTableColumn" id="TableColumnResult">
+        <result property="columnName" column="COLUMN_NAME"/>
+        <result property="isNullable" column="IS_NULLABLE"/>
+        <result property="dataType" column="DATA_TYPE"/>
+        <result property="columnType" column="COLUMN_TYPE"/>
+        <result property="columnKey" column="COLUMN_KEY"/>
+        <result property="columnComment" column="COLUMN_COMMENT"/>
+    </resultMap>
+
+    <!-- SQL 查询语句，返回表的元数据 -->
+    <sql id="selectTableColumn">
+        SELECT
+            TABLE_CATALOG,
+            TABLE_SCHEMA,
+            TABLE_NAME,
+            COLUMN_NAME,
+            ORDINAL_POSITION,
+            COLUMN_DEFAULT,
+            IS_NULLABLE,
+            DATA_TYPE,
+            CHARACTER_MAXIMUM_LENGTH,
+            NUMERIC_PRECISION,
+            NUMERIC_SCALE,
+            DATETIME_PRECISION,
+            CHARACTER_SET_NAME,
+            COLLATION_NAME,
+            COLUMN_TYPE,
+            COLUMN_KEY,
+            EXTRA,
+            PRIVILEGES,
+            COLUMN_COMMENT
+        FROM
+            INFORMATION_SCHEMA.COLUMNS
+    </sql>
+
+    <!-- 使用 select 语句并映射到 resultMap -->
+    <select id="selectTableByTableName" resultMap="TableColumnResult" parameterType="string">
+        <include refid="selectTableColumn"/>
+        WHERE TABLE_NAME = #{tableName}
+        AND TABLE_SCHEMA = (select database()); -- 替换为你的数据库名
+    </select>
+
+</mapper>

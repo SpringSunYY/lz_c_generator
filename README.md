@@ -776,7 +776,9 @@ $table
 
 1. 获取数据库表字段信息：
    - 获取到数据库需要生成的表的基本信息，表名、列名称、数据类型、注释等等。
-   - 编写对应实体，对应功能。
+   - 编写对应实体。
+   - 编写查询语句映射实体。
+   - 编写辅助功能。
 2. 整合Velocity模版：
    - 项目整合Velocity模版，基本的工具类。
 3. 编写基本的Velocity的生成模版生成代码：
@@ -1018,7 +1020,7 @@ public class GenTable {
     private String packageName;           // 生成包路径
     private String author;                // 作者
     private List<GenTableColumn> columns; // 列表信息
-    private GenTableColumn pkColumn;      // 主键
+    private String isPk;                  // 主键
     private static final long serialVersionUID = 1L;
 
     public String getTableName() {
@@ -1069,14 +1071,15 @@ public class GenTable {
         this.columns = columns;
     }
 
-    public GenTableColumn getPkColumn() {
-        return pkColumn;
+    public String getIsPk() {
+        return isPk;
     }
 
-    public void setPkColumn(GenTableColumn pkColumn) {
-        this.pkColumn = pkColumn;
+    public void setIsPk(String isPk) {
+        this.isPk = isPk;
     }
 }
+
 ```
 
 
@@ -1089,9 +1092,11 @@ public class GenTableColumn {
     public String dataType;                  // 数据类型
     public String columnType;                // 列类型
     public String columnComment;             // 列注释
+    private String isPk;                     // 主键
+    private String columnKey;                // 键类型
+    private String isNullable;               // 是否可为空
     private String javaType;                 // Java类型
     private String javaField;                // Java字段
-    private String isPk;                     // 主键
     private static final long serialVersionUID = 1L;
 
     public String getColumnName() {
@@ -1126,6 +1131,30 @@ public class GenTableColumn {
         this.columnComment = columnComment;
     }
 
+    public String getIsPk() {
+        return isPk;
+    }
+
+    public void setIsPk(String isPk) {
+        this.isPk = isPk;
+    }
+
+    public String getColumnKey() {
+        return columnKey;
+    }
+
+    public void setColumnKey(String columnKey) {
+        this.columnKey = columnKey;
+    }
+
+    public String getIsNullable() {
+        return isNullable;
+    }
+
+    public void setIsNullable(String isNullable) {
+        this.isNullable = isNullable;
+    }
+
     public String getJavaType() {
         return javaType;
     }
@@ -1142,13 +1171,227 @@ public class GenTableColumn {
         this.javaField = javaField;
     }
 
-    public String getIsPk() {
-        return isPk;
+    @Override
+    public String toString() {
+        return "GenTableColumn{" +
+                "columnName='" + columnName + '\'' +
+                ", dataType='" + dataType + '\'' +
+                ", columnType='" + columnType + '\'' +
+                ", columnComment='" + columnComment + '\'' +
+                ", isPk='" + isPk + '\'' +
+                ", columnKey='" + columnKey + '\'' +
+                ", isNullable='" + isNullable + '\'' +
+                ", javaType='" + javaType + '\'' +
+                ", javaField='" + javaField + '\'' +
+                '}';
     }
+}
 
-    public void setIsPk(String isPk) {
-        this.isPk = isPk;
+```
+
+
+
+#### 4、映射实体
+
+1、首先加**pom依赖、mybatis和yml**的配置：
+
+```xml
+   <properties>
+        <java.version>1.8</java.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <spring-boot.version>2.6.13</spring-boot.version>
+        <fastjson.version>2.0.43</fastjson.version>
+        <velocity.version>2.3</velocity.version>
+        <druid.version>1.2.20</druid.version>
+    </properties>
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mybatis.spring.boot</groupId>
+            <artifactId>mybatis-spring-boot-starter</artifactId>
+            <version>2.2.2</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-jdbc</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+        </dependency>
+        
+        <!-- velocity代码生成使用模板 -->
+        <dependency>
+            <groupId>org.apache.velocity</groupId>
+            <artifactId>velocity-engine-core</artifactId>
+            <version>${velocity.version}</version>
+        </dependency>
+
+        <!-- 阿里JSON解析器 -->
+        <dependency>
+            <groupId>com.alibaba.fastjson2</groupId>
+            <artifactId>fastjson2</artifactId>
+            <version>${fastjson.version}</version>
+        </dependency>
+
+        <!-- 阿里数据库连接池 -->
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>druid-spring-boot-starter</artifactId>
+            <version>${druid.version}</version>
+        </dependency>
+    </dependencies>
+```
+
+mybatis-config.xml
+
+```xml
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+    <!-- 全局参数 -->
+    <settings>
+        <!-- 使全局的映射器启用或禁用缓存 -->
+        <setting name="cacheEnabled"             value="true"   />
+        <!-- 允许JDBC 支持自动生成主键 -->
+        <setting name="useGeneratedKeys"         value="true"   />
+        <!-- 配置默认的执行器.SIMPLE就是普通执行器;REUSE执行器会重用预处理语句(prepared statements);BATCH执行器将重用语句并执行批量更新 -->
+        <setting name="defaultExecutorType"      value="SIMPLE" />
+		<!-- 指定 MyBatis 所用日志的具体实现 -->
+        <setting name="logImpl"                  value="SLF4J"  />
+        <!-- 使用驼峰命名法转换字段 -->
+		<!-- <setting name="mapUnderscoreToCamelCase" value="true"/> -->
+	</settings>
+</configuration>
+
+```
+
+yml
+
+```yml
+# 开发环境配置
+server:
+  # 服务器的HTTP端口，默认为8080
+  port: 8080
+
+# 数据源配置
+spring:
+  datasource:
+    type: com.alibaba.druid.pool.DruidDataSource
+    driverClassName: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/syy_lz_generator?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8
+    username: root
+    password: yy0908..
+
+# MyBatis配置
+mybatis:
+  # 搜索指定包别名
+  typeAliasesPackage: com.lz.**.model
+  # 配置mapper的扫描，找到所有的mapper.xml映射文件
+  mapperLocations: classpath*:mapper/**/*Mapper.xml
+  # 加载全局的配置文件
+  configLocation: classpath:mybatis/mybatis-config.xml
+
+```
+
+2、**编写Mapper***，查询字段信息：
+
+GenTableColumnMapper：
+
+```java
+@Mapper
+public interface GenTableColumnMapper {
+    List<GenTableColumn> selectTableByTableName(String tableName);
+}
+```
+
+GenTableColumnMapper.xml：
+
+```xml
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.lz.crud_generator.mapper.GenTableColumnMapper">
+
+    <!-- resultMap 定义，映射到 BookInfoTableMetadata 类 -->
+    <resultMap type="GenTableColumn" id="TableColumnResult">
+        <result property="columnName" column="COLUMN_NAME"/>
+        <result property="isNullable" column="IS_NULLABLE"/>
+        <result property="dataType" column="DATA_TYPE"/>
+        <result property="columnType" column="COLUMN_TYPE"/>
+        <result property="columnKey" column="COLUMN_KEY"/>
+        <result property="columnComment" column="COLUMN_COMMENT"/>
+    </resultMap>
+
+    <!-- SQL 查询语句，返回表的元数据 -->
+    <sql id="selectTableColumn">
+        SELECT
+            TABLE_CATALOG,
+            TABLE_SCHEMA,
+            TABLE_NAME,
+            COLUMN_NAME,
+            ORDINAL_POSITION,
+            COLUMN_DEFAULT,
+            IS_NULLABLE,
+            DATA_TYPE,
+            CHARACTER_MAXIMUM_LENGTH,
+            NUMERIC_PRECISION,
+            NUMERIC_SCALE,
+            DATETIME_PRECISION,
+            CHARACTER_SET_NAME,
+            COLLATION_NAME,
+            COLUMN_TYPE,
+            COLUMN_KEY,
+            EXTRA,
+            PRIVILEGES,
+            COLUMN_COMMENT
+        FROM
+            INFORMATION_SCHEMA.COLUMNS
+    </sql>
+
+    <!-- 使用 select 语句并映射到 resultMap -->
+    <select id="selectTableByTableName" resultMap="TableColumnResult" parameterType="string">
+        <include refid="selectTableColumn"/>
+        WHERE TABLE_NAME = #{tableName}
+        AND TABLE_SCHEMA = (select database()); -- 替换为你的数据库名
+    </select>
+</mapper>
+
+```
+
+3、**编写测试类**：
+
+```java
+@SpringBootTest
+public class genTableTest {
+    @Autowired
+    public GenTableColumnMapper genTableColumnMapper;
+
+    @Test
+    void getTableInfo(){
+        List<GenTableColumn> genTableColumns = genTableColumnMapper.selectTableByTableName("book_info");
+        for (GenTableColumn genTableColumn : genTableColumns) {
+            System.out.println("genTableColumn = " + genTableColumn);
+        }
     }
 }
 ```
 
+4、**运行**
+
+运行测试方法得到结果如图所示：
+
+![image-20240926205415043](./assets/image-20240926205415043.png)

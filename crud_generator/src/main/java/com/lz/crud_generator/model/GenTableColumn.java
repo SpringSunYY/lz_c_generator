@@ -13,9 +13,11 @@ public class GenTableColumn {
     public String dataType;                  // 数据类型
     public String columnType;                // 列类型
     public String columnComment;             // 列注释
+    private String isPk;                     // 主键
+    private String columnKey;                // 键类型
+    private String isNullable;               // 是否可为空
     private String javaType;                 // Java类型
     private String javaField;                // Java字段
-    private String isPk;                     // 主键
     private static final long serialVersionUID = 1L;
 
     public String getColumnName() {
@@ -50,6 +52,30 @@ public class GenTableColumn {
         this.columnComment = columnComment;
     }
 
+    public String getIsPk() {
+        return isPk;
+    }
+
+    public void setIsPk(String isPk) {
+        this.isPk = isPk;
+    }
+
+    public String getColumnKey() {
+        return columnKey;
+    }
+
+    public void setColumnKey(String columnKey) {
+        this.columnKey = columnKey;
+    }
+
+    public String getIsNullable() {
+        return isNullable;
+    }
+
+    public void setIsNullable(String isNullable) {
+        this.isNullable = isNullable;
+    }
+
     public String getJavaType() {
         return javaType;
     }
@@ -66,11 +92,18 @@ public class GenTableColumn {
         this.javaField = javaField;
     }
 
-    public String getIsPk() {
-        return isPk;
-    }
-
-    public void setIsPk(String isPk) {
-        this.isPk = isPk;
+    @Override
+    public String toString() {
+        return "GenTableColumn{" +
+                "columnName='" + columnName + '\'' +
+                ", dataType='" + dataType + '\'' +
+                ", columnType='" + columnType + '\'' +
+                ", columnComment='" + columnComment + '\'' +
+                ", isPk='" + isPk + '\'' +
+                ", columnKey='" + columnKey + '\'' +
+                ", isNullable='" + isNullable + '\'' +
+                ", javaType='" + javaType + '\'' +
+                ", javaField='" + javaField + '\'' +
+                '}';
     }
 }
