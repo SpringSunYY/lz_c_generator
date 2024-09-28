@@ -1078,6 +1078,19 @@ public class GenTable {
     public void setIsPk(String isPk) {
         this.isPk = isPk;
     }
+
+    @Override
+    public String toString() {
+        return "GenTable{" +
+                "tableName='" + tableName + '\'' +
+                ", tableComment='" + tableComment + '\'' +
+                ", className='" + className + '\'' +
+                ", packageName='" + packageName + '\'' +
+                ", author='" + author + '\'' +
+                ", columns=" + columns +
+                ", isPk='" + isPk + '\'' +
+                '}';
+    }
 }
 
 ```
@@ -1196,7 +1209,7 @@ public class GenTableColumn {
 1、首先加**pom依赖、mybatis和yml**的配置：
 
 ```xml
-   <properties>
+    <properties>
         <java.version>1.8</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -1204,6 +1217,7 @@ public class GenTableColumn {
         <fastjson.version>2.0.43</fastjson.version>
         <velocity.version>2.3</velocity.version>
         <druid.version>1.2.20</druid.version>
+        <hutool.version>5.8.8</hutool.version>
     </properties>
     <dependencies>
         <dependency>
@@ -1220,36 +1234,38 @@ public class GenTableColumn {
             <artifactId>mybatis-spring-boot-starter</artifactId>
             <version>2.2.2</version>
         </dependency>
-
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-jdbc</artifactId>
         </dependency>
-
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
         </dependency>
-        
         <!-- velocity代码生成使用模板 -->
         <dependency>
             <groupId>org.apache.velocity</groupId>
             <artifactId>velocity-engine-core</artifactId>
             <version>${velocity.version}</version>
         </dependency>
-
         <!-- 阿里JSON解析器 -->
         <dependency>
             <groupId>com.alibaba.fastjson2</groupId>
             <artifactId>fastjson2</artifactId>
             <version>${fastjson.version}</version>
         </dependency>
-
         <!-- 阿里数据库连接池 -->
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>druid-spring-boot-starter</artifactId>
             <version>${druid.version}</version>
+        </dependency>
+        <!--  hutool工具箱，操作文件 -->
+        <!--  https://hutool.cn/docs/index.html#/ -->
+        <dependency>
+            <groupId>cn.hutool</groupId>
+            <artifactId>hutool-all</artifactId>
+            <version>${hutool.version}</version>
         </dependency>
     </dependencies>
 ```
@@ -1318,6 +1334,15 @@ public interface GenTableColumnMapper {
 }
 ```
 
+GenTableMapper:
+
+```xml
+@Mapper
+public interface GenTableMapper {
+    GenTable selectTableByTableName(@Param("tableName") String tableName);
+}
+```
+
 GenTableColumnMapper.xml：
 
 ```xml
@@ -1368,6 +1393,39 @@ GenTableColumnMapper.xml：
         WHERE TABLE_NAME = #{tableName}
         AND TABLE_SCHEMA = (select database()); -- 替换为你的数据库名
     </select>
+</mapper>
+
+```
+
+GenTableMapper.xml:
+
+```xml
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.lz.crud_generator.mapper.GenTableMapper">
+
+    <!-- resultMap 定义，映射到 BookInfoTableMetadata 类 -->
+    <resultMap type="GenTable" id="TableResult">
+        <id property="tableName" column="TABLE_NAME"/>
+        <result property="tableComment" column="TABLE_COMMENT"/>
+    </resultMap>
+
+    <!-- SQL 查询语句，返回表的元数据 -->
+    <sql id="selectTable">
+        SELECT
+            TABLE_NAME,
+            TABLE_COMMENT
+        FROM
+            INFORMATION_SCHEMA.TABLES
+    </sql>
+
+    <select id="selectTableByTableName" resultMap="TableResult">
+        <include refid="selectTable"/>
+        WHERE TABLE_NAME = #{tableName}
+        AND TABLE_SCHEMA = (select database()); -- 替换为你的数据库名
+    </select>
+
 </mapper>
 
 ```

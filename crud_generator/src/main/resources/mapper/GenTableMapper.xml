@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.lz.crud_generator.mapper.GenTableMapper">
+
+    <!-- resultMap 定义，映射到 BookInfoTableMetadata 类 -->
+    <resultMap type="GenTable" id="TableResult">
+        <id property="tableName" column="TABLE_NAME"/>
+        <result property="tableComment" column="TABLE_COMMENT"/>
+    </resultMap>
+
+    <!-- SQL 查询语句，返回表的元数据 -->
+    <sql id="selectTable">
+        SELECT
+            TABLE_NAME,
+            TABLE_COMMENT
+        FROM
+            INFORMATION_SCHEMA.TABLES
+    </sql>
+
+    <select id="selectTableByTableName" resultMap="TableResult">
+        <include refid="selectTable"/>
+        WHERE TABLE_NAME = #{tableName}
+        AND TABLE_SCHEMA = (select database()); -- 替换为你的数据库名
+    </select>
+
+</mapper>

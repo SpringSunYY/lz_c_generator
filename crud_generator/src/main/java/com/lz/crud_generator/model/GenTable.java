@@ -75,4 +75,17 @@ public class GenTable {
     public void setIsPk(String isPk) {
         this.isPk = isPk;
     }
+
+    @Override
+    public String toString() {
+        return "GenTable{" +
+                "tableName='" + tableName + '\'' +
+                ", tableComment='" + tableComment + '\'' +
+                ", className='" + className + '\'' +
+                ", packageName='" + packageName + '\'' +
+                ", author='" + author + '\'' +
+                ", columns=" + columns +
+                ", isPk='" + isPk + '\'' +
+                '}';
+    }
 }

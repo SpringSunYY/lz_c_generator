@@ -1,8 +1,10 @@
 package com.lz.crud_generator;
 
 import com.lz.crud_generator.mapper.GenTableColumnMapper;
+import com.lz.crud_generator.mapper.GenTableMapper;
 import com.lz.crud_generator.model.GenTable;
 import com.lz.crud_generator.model.GenTableColumn;
+import com.lz.crud_generator.service.GenTableService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -22,11 +24,24 @@ public class genTableTest {
     @Autowired
     public GenTableColumnMapper genTableColumnMapper;
 
+    @Autowired
+    private GenTableMapper genTableMapper;
+
+    @Autowired
+    private GenTableService genTableService;
+
     @Test
     void getTableInfo(){
-        List<GenTableColumn> genTableColumns = genTableColumnMapper.selectTableByTableName("book_info");
+        List<GenTableColumn> genTableColumns = genTableColumnMapper.selectTableColumnByTableName("book_info");
         for (GenTableColumn genTableColumn : genTableColumns) {
             System.out.println("genTableColumn = " + genTableColumn);
         }
+        GenTable genTable = genTableMapper.selectTableByTableName("book_info");
+        System.out.println("genTable = " + genTable);
+    }
+
+    @Test
+    void  initTable(){
+        genTableService.initTableInfo("book_info");
     }
 }

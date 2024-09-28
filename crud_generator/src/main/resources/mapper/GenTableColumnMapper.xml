@@ -40,7 +40,7 @@
     </sql>
 
     <!-- 使用 select 语句并映射到 resultMap -->
-    <select id="selectTableByTableName" resultMap="TableColumnResult" parameterType="string">
+    <select id="selectTableColumnByTableName" resultMap="TableColumnResult" parameterType="string">
         <include refid="selectTableColumn"/>
         WHERE TABLE_NAME = #{tableName}
         AND TABLE_SCHEMA = (select database()); -- 替换为你的数据库名
