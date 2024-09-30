@@ -42,6 +42,7 @@ public class genTableTest {
 
     @Test
     void  initTable(){
-        genTableService.initTableInfo("book_info");
+        GenTable genTable = genTableService.initTableInfo("book_info");
+        System.out.println("genTable = " + genTable);
     }
 }

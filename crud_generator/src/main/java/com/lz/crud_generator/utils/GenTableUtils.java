@@ -2,6 +2,13 @@ package com.lz.crud_generator.utils;
 
 import com.lz.crud_generator.config.GenTableConfig;
 import com.lz.crud_generator.model.GenTable;
+import com.lz.crud_generator.model.GenTableColumn;
+
+import javax.swing.table.TableColumn;
+import java.util.Arrays;
+import java.util.List;
+
+import static com.lz.crud_generator.model.constant.GenTableConstants.*;
 
 /**
  * @Project: crud_generator
@@ -14,50 +21,84 @@ import com.lz.crud_generator.model.GenTable;
 public class GenTableUtils {
     /**
      * @description: 初始化表信息
-     * @author: YY
-     * @method: initTableInfo
-     * @date: 2024/9/28 20:19
-     * @param:
      * @param: genTable
-     * @return: void
      **/
-    public static void initTableInfo(GenTable genTable) {
+    public static void initTableInfo(GenTable genTable, List<GenTableColumn> tableColumns) {
+        for (GenTableColumn tableColumn : tableColumns) {
+            //判断主键
+            if (tableColumn.getColumnKey().equals(PRI)) {
+                genTable.setIsPk(tableColumn.getColumnName());
+            }
+            //初始化Java类型
+            initTableColumnJavaType(tableColumn);
+            //初始化Java字段
+            initTableColumnJavaFiled(tableColumn);
+        }
+        genTable.setColumns(tableColumns);
+    }
 
+    /**
+     * 初始化Java字段
+     * @param tableColumn
+     */
+    private static void initTableColumnJavaFiled(GenTableColumn tableColumn) {
+        tableColumn.setJavaField(MyStrUtils.toCamelCase(tableColumn.getColumnName()));
+    }
+
+    /**
+     * 初始化Java类型
+     * @param tableColumn
+     */
+    private static void initTableColumnJavaType(GenTableColumn tableColumn) {
+        tableColumn.setJavaType(TYPE_STRING);
+        if (arraysContains(COLUMNTYPE_TIME,tableColumn.getColumnType())) {
+            tableColumn.setJavaType(TYPE_DATE);
+        }else if(arraysContains(COLUMNTYPE_NUMBER,tableColumn.getColumnType())){
+            // 如果是浮点型 统一用BigDecimal
+            String[] str = MyStrUtils.split(MyStrUtils.substringBetween(tableColumn.getColumnType(), "(", ")"), ",");
+            if (str != null && str.length == 2 && Integer.parseInt(str[1]) > 0) {
+                tableColumn.setJavaType(TYPE_BIGDECIMAL);
+            }
+            // 如果是整形
+            else if (str != null && str.length == 1 && Integer.parseInt(str[0]) <= 10) {
+                tableColumn.setJavaType(TYPE_INTEGER);
+            }
+            // 长整形
+            else {
+                tableColumn.setJavaType(TYPE_LONG);
+            }
+        }
+    }
+
+    /**
+     * 驼峰命名
+     * @param arr
+     * @param targetValue
+     */
+    public static boolean arraysContains(String[] arr, String targetValue) {
+        return Arrays.asList(arr).contains(targetValue);
     }
 
     /**
      * @description: 初始化表信息
-     * @author: YY
-     * @method: initTable
-     * @date: 2024/9/28 20:49
-     * @param:
      * @param: genTable
-     * @return: void
      **/
     public static void initTable(GenTable genTable) {
         String tableName = genTable.getTableName();
-        String tableComment = genTable.getTableComment();
         genTable.setClassName(initTableName(tableName));
         genTable.setAuthor(GenTableConfig.getAuthor());
         genTable.setPackageName(GenTableConfig.getPackageName());
-        System.out.println("genTable = " + genTable);
-
     }
 
     /**
      * @description: 初始化表名
-     * @author: YY
-     * @method: initTableName
-     * @date: 2024/9/28 20:57
-     * @param:
      * @param: tableName
-     * @return: java.lang.String
      **/
     private static String initTableName(String tableName) {
         //是否要去掉表头
         boolean autoRemovePre = GenTableConfig.getAutoRemovePre();
         String tablePrefix = GenTableConfig.getTablePrefix();
-        if (autoRemovePre && MyStrUtils.isNotEmpty(tablePrefix)){
+        if (autoRemovePre && MyStrUtils.isNotEmpty(tablePrefix)) {
             String[] searchList = MyStrUtils.split(tablePrefix, ",");
             tableName = replaceFirst(tableName, searchList);
         }
@@ -66,18 +107,13 @@ public class GenTableUtils {
 
     /**
      * 批量替换前缀
-     *
      * @param replacementm 替换值
-     * @param searchList 替换列表
-     * @return
+     * @param searchList   替换列表
      */
-    public static String replaceFirst(String replacementm, String[] searchList)
-    {
+    public static String replaceFirst(String replacementm, String[] searchList) {
         String text = replacementm;
-        for (String searchString : searchList)
-        {
-            if (replacementm.startsWith(searchString))
-            {
+        for (String searchString : searchList) {
+            if (replacementm.startsWith(searchString)) {
                 text = replacementm.replaceFirst(searchString, "");
                 break;
             }

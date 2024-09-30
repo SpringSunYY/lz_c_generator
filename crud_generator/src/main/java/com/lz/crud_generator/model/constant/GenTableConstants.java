@@ -2,7 +2,6 @@ package com.lz.crud_generator.model.constant;
 
 /**
  * 代码生成通用常量
- *
  * @author YY
  */
 public class GenTableConstants {
@@ -27,6 +26,11 @@ public class GenTableConstants {
      */
     public static final String[] COLUMNTYPE_NUMBER = {"tinyint", "smallint", "mediumint", "int", "number", "integer",
             "bit", "bigint", "float", "double", "decimal"};
+
+    /**
+     * 主键
+     */
+    public static final String PRI="PRI";
     //endregion
 
     //region Java类型

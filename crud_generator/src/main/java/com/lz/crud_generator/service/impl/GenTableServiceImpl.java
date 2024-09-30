@@ -29,21 +29,15 @@ public class GenTableServiceImpl implements GenTableService {
 
     /**
      * @description: 初始化表信息
-     * @author: YY
-     * @method: initTableInfo
-     * @date: 2024/9/28 20:48
-     * @param:
      * @param: tableName
-     * @return: com.lz.crud_generator.model.GenTable
      **/
     @Override
     public GenTable initTableInfo(String tableName) {
         GenTable genTable = genTableMapper.selectTableByTableName(tableName);
         GenTableUtils.initTable(genTable);
         List<GenTableColumn> tableColumns = genTableColumnMapper.selectTableColumnByTableName(tableName);
-        genTable.setColumns(tableColumns);
         //初始化要生成的表信息
-        GenTableUtils.initTableInfo(genTable);
+        GenTableUtils.initTableInfo(genTable,tableColumns);
         return genTable;
     }
 }

@@ -2,6 +2,7 @@ package com.lz.crud_generator.utils;
 
 import cn.hutool.core.util.StrUtil;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.ObjectUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,6 +16,15 @@ import java.util.List;
  * @Version: 1.0
  */
 public class MyStrUtils extends StrUtil {
+
+    /** 空字符串 */
+    private static final String NULLSTR = "";
+
+    /** 下划线 */
+    private static final char SEPARATOR = '_';
+
+    /** 星号 */
+    private static final char ASTERISK = '*';
     /**
      * 将下划线大写方式命名的字符串转换为驼峰式。如果转换前的下划线大写方式命名的字符串为空，则返回空字符串。
      * 例如：HELLO_WORLD->HelloWorld
@@ -52,6 +62,49 @@ public class MyStrUtils extends StrUtil {
         return result.toString();
     }
 
+    /**
+     * 驼峰式命名法
+     * 例如：user_name->userName
+     */
+    public static String toCamelCase(String s)
+    {
+        if (s == null)
+        {
+            return null;
+        }
+        if (s.indexOf(SEPARATOR) == -1)
+        {
+            return s;
+        }
+        s = s.toLowerCase();
+        StringBuilder sb = new StringBuilder(s.length());
+        boolean upperCase = false;
+        for (int i = 0; i < s.length(); i++)
+        {
+            char c = s.charAt(i);
+
+            if (c == SEPARATOR)
+            {
+                upperCase = true;
+            }
+            else if (upperCase)
+            {
+                sb.append(Character.toUpperCase(c));
+                upperCase = false;
+            }
+            else
+            {
+                sb.append(c);
+            }
+        }
+        return sb.toString();
+    }
+
+    /**
+     * 分割字符
+     * @param str
+     * @param separatorChars
+     */
     public static String[] split(final String str, final String separatorChars) {
         return splitWorker(str, separatorChars, -1, false);
     }
@@ -135,5 +188,22 @@ public class MyStrUtils extends StrUtil {
             list.add(str.substring(start, i));
         }
         return list.toArray(ArrayUtils.EMPTY_STRING_ARRAY);
+    }
+
+    /**
+     * 获取两个字符之内的字符串
+     */
+    public static String substringBetween(final String str, final String open, final String close) {
+        if (!ObjectUtils.allNotNull(str, open, close)) {
+            return null;
+        }
+        final int start = str.indexOf(open);
+        if (start != INDEX_NOT_FOUND) {
+            final int end = str.indexOf(close, start + open.length());
+            if (end != INDEX_NOT_FOUND) {
+                return str.substring(start + open.length(), end);
+            }
+        }
+        return null;
     }
 }
