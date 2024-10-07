@@ -43,7 +43,8 @@
     <select id="selectTableColumnByTableName" resultMap="TableColumnResult" parameterType="string">
         <include refid="selectTableColumn"/>
         WHERE TABLE_NAME = #{tableName}
-        AND TABLE_SCHEMA = (select database()); -- 替换为你的数据库名
+        AND TABLE_SCHEMA = (select database()) -- 替换为你的数据库名
+        order by ORDINAL_POSITION
     </select>
 
 </mapper>

@@ -1,0 +1,43 @@
+package ${packageName};
+
+import java.util.List;
+
+/**
+ * @Author: ${author}
+ * @Description:
+ * ${className}
+ * ${tableComment}
+ * 表：${tableName}
+ * @Version: 1.0
+ */
+public class ${className} {
+    #foreach($column in $columns)
+        #if($column.columnComment)
+    /**
+     * ${column.columnComment}
+     */
+    #end
+    private ${column.javaType} ${column.javaField};
+    #end
+    private static final long serialVersionUID = 1L;
+
+    #foreach($column in $columns)
+    #set($AttrName=$column.javaField.substring(0,1).toUpperCase() + ${column.javaField.substring(1)})
+    public ${column.javaType} get${AttrName}() {
+        return ${column.javaField};
+    }
+
+    public void set${AttrName}(${column.javaType} ${column.javaField}) {
+        this.${column.javaField} = ${column.javaField};
+    }
+    #end
+
+    @Override
+    public String toString() {
+        return "${className}{" +
+        #foreach($column in $columns)
+                "${column.javaField}='" + ${column.javaField} + '\n\'' +
+        #end
+                '}';
+    }
+}

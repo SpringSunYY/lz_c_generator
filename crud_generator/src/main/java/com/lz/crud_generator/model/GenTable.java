@@ -16,8 +16,8 @@ public class GenTable {
     private String className;             // 实体类名称(首字母大写)
     private String packageName;           // 生成包路径
     private String author;                // 作者
-    private List<GenTableColumn> columns; // 列表信息
     private String isPk;                  // 主键
+    private List<GenTableColumn> columns; // 列表信息
     private static final long serialVersionUID = 1L;
 
     public String getTableName() {
@@ -84,8 +84,8 @@ public class GenTable {
                 ", className='" + className + '\'' +
                 ", packageName='" + packageName + '\'' +
                 ", author='" + author + '\'' +
-                ", columns=" + columns +
                 ", isPk='" + isPk + '\'' +
+                ", columns=" + columns +
                 '}';
     }
 }

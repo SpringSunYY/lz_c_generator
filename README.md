@@ -778,7 +778,7 @@ $table
    - 获取到数据库需要生成的表的基本信息，表名、列名称、数据类型、注释等等。
    - 编写对应实体。
    - 编写查询语句映射实体。
-   - 编写辅助功能。
+   - 编写具体功能。
 2. 整合Velocity模版：
    - 项目整合Velocity模版，基本的工具类。
 3. 编写基本的Velocity的生成模版生成代码：
@@ -1186,7 +1186,7 @@ public class GenTableColumn {
 
     @Override
     public String toString() {
-        return "GenTableColumn{" +
+        return "\nGenTableColumn{" +
                 "columnName='" + columnName + '\'' +
                 ", dataType='" + dataType + '\'' +
                 ", columnType='" + columnType + '\'' +
@@ -1453,3 +1453,603 @@ public class genTableTest {
 运行测试方法得到结果如图所示：
 
 ![image-20240926205415043](./assets/image-20240926205415043.png)
+
+#### 5、具体功能
+
+##### 5.1、复制String工具类
+
+```java
+public class MyStrUtils extends StrUtil {
+
+    /** 空字符串 */
+    private static final String NULLSTR = "";
+
+    /** 下划线 */
+    private static final char SEPARATOR = '_';
+
+    /** 星号 */
+    private static final char ASTERISK = '*';
+    /**
+     * 将下划线大写方式命名的字符串转换为驼峰式。如果转换前的下划线大写方式命名的字符串为空，则返回空字符串。
+     * 例如：HELLO_WORLD->HelloWorld
+     *
+     * @param name 转换前的下划线大写方式命名的字符串
+     * @return 转换后的驼峰式命名的字符串
+     */
+    public static String convertToCamelCase(String name)
+    {
+        StringBuilder result = new StringBuilder();
+        // 快速检查
+        if (name == null || name.isEmpty())
+        {
+            // 没必要转换
+            return "";
+        }
+        else if (!name.contains("_"))
+        {
+            // 不含下划线，仅将首字母大写
+            return name.substring(0, 1).toUpperCase() + name.substring(1);
+        }
+        // 用下划线将原始字符串分割
+        String[] camels = name.split("_");
+        for (String camel : camels)
+        {
+            // 跳过原始字符串中开头、结尾的下换线或双重下划线
+            if (camel.isEmpty())
+            {
+                continue;
+            }
+            // 首字母大写
+            result.append(camel.substring(0, 1).toUpperCase());
+            result.append(camel.substring(1).toLowerCase());
+        }
+        return result.toString();
+    }
+
+    /**
+     * 驼峰式命名法
+     * 例如：user_name->userName
+     */
+    public static String toCamelCase(String s)
+    {
+        if (s == null)
+        {
+            return null;
+        }
+        if (s.indexOf(SEPARATOR) == -1)
+        {
+            return s;
+        }
+        s = s.toLowerCase();
+        StringBuilder sb = new StringBuilder(s.length());
+        boolean upperCase = false;
+        for (int i = 0; i < s.length(); i++)
+        {
+            char c = s.charAt(i);
+
+            if (c == SEPARATOR)
+            {
+                upperCase = true;
+            }
+            else if (upperCase)
+            {
+                sb.append(Character.toUpperCase(c));
+                upperCase = false;
+            }
+            else
+            {
+                sb.append(c);
+            }
+        }
+        return sb.toString();
+    }
+
+    /**
+     * 分割字符
+     * @param str
+     * @param separatorChars
+     */
+    public static String[] split(final String str, final String separatorChars) {
+        return splitWorker(str, separatorChars, -1, false);
+    }
+    private static String[] splitWorker(final String str, final String separatorChars, final int max, final boolean preserveAllTokens) {
+        if (str == null) {
+            return null;
+        }
+        final int len = str.length();
+        if (len == 0) {
+            return ArrayUtils.EMPTY_STRING_ARRAY;
+        }
+        final List<String> list = new ArrayList<>();
+        int sizePlus1 = 1;
+        int i = 0;
+        int start = 0;
+        boolean match = false;
+        boolean lastMatch = false;
+        if (separatorChars == null) {
+            // Null separator means use whitespace
+            while (i < len) {
+                if (Character.isWhitespace(str.charAt(i))) {
+                    if (match || preserveAllTokens) {
+                        lastMatch = true;
+                        if (sizePlus1++ == max) {
+                            i = len;
+                            lastMatch = false;
+                        }
+                        list.add(str.substring(start, i));
+                        match = false;
+                    }
+                    start = ++i;
+                    continue;
+                }
+                lastMatch = false;
+                match = true;
+                i++;
+            }
+        } else if (separatorChars.length() == 1) {
+            // Optimise 1 character case
+            final char sep = separatorChars.charAt(0);
+            while (i < len) {
+                if (str.charAt(i) == sep) {
+                    if (match || preserveAllTokens) {
+                        lastMatch = true;
+                        if (sizePlus1++ == max) {
+                            i = len;
+                            lastMatch = false;
+                        }
+                        list.add(str.substring(start, i));
+                        match = false;
+                    }
+                    start = ++i;
+                    continue;
+                }
+                lastMatch = false;
+                match = true;
+                i++;
+            }
+        } else {
+            // standard case
+            while (i < len) {
+                if (separatorChars.indexOf(str.charAt(i)) >= 0) {
+                    if (match || preserveAllTokens) {
+                        lastMatch = true;
+                        if (sizePlus1++ == max) {
+                            i = len;
+                            lastMatch = false;
+                        }
+                        list.add(str.substring(start, i));
+                        match = false;
+                    }
+                    start = ++i;
+                    continue;
+                }
+                lastMatch = false;
+                match = true;
+                i++;
+            }
+        }
+        if (match || preserveAllTokens && lastMatch) {
+            list.add(str.substring(start, i));
+        }
+        return list.toArray(ArrayUtils.EMPTY_STRING_ARRAY);
+    }
+
+    /**
+     * 获取两个字符之内的字符串
+     */
+    public static String substringBetween(final String str, final String open, final String close) {
+        if (!ObjectUtils.allNotNull(str, open, close)) {
+            return null;
+        }
+        final int start = str.indexOf(open);
+        if (start != INDEX_NOT_FOUND) {
+            final int end = str.indexOf(close, start + open.length());
+            if (end != INDEX_NOT_FOUND) {
+                return str.substring(start + open.length(), end);
+            }
+        }
+        return null;
+    }
+}
+```
+
+##### 5.2、编写服务类
+
+```java
+public interface GenTableService {
+    GenTable initTableInfo(String tableName);
+}
+```
+
+```java
+    @Autowired
+    private GenTableColumnMapper genTableColumnMapper;
+
+    @Autowired
+    private GenTableMapper genTableMapper;
+
+    /**
+     * @description: 初始化表信息
+     * @param: tableName
+     **/
+    @Override
+    public GenTable initTableInfo(String tableName) {
+        GenTable genTable = genTableMapper.selectTableByTableName(tableName);
+        GenTableUtils.initTable(genTable);
+        List<GenTableColumn> tableColumns = genTableColumnMapper.selectTableColumnByTableName(tableName);
+        //初始化要生成的表信息
+        GenTableUtils.initTableInfo(genTable,tableColumns);
+        return genTable;
+    }
+```
+
+##### 5.3、编写工具类
+
+```java
+public class GenTableUtils {
+    /**
+     * @description: 初始化表信息
+     * @param: genTable
+     **/
+    public static void initTableInfo(GenTable genTable, List<GenTableColumn> tableColumns) {
+        for (GenTableColumn tableColumn : tableColumns) {
+            //判断主键
+            if (tableColumn.getColumnKey().equals(PRI)) {
+                genTable.setIsPk(tableColumn.getColumnName());
+            }
+            //初始化Java类型
+            initTableColumnJavaType(tableColumn);
+            //初始化Java字段
+            initTableColumnJavaFiled(tableColumn);
+        }
+        genTable.setColumns(tableColumns);
+    }
+
+    /**
+     * 初始化Java字段
+     * @param tableColumn
+     */
+    private static void initTableColumnJavaFiled(GenTableColumn tableColumn) {
+        tableColumn.setJavaField(MyStrUtils.toCamelCase(tableColumn.getColumnName()));
+    }
+
+    /**
+     * 初始化Java类型
+     * @param tableColumn
+     */
+    private static void initTableColumnJavaType(GenTableColumn tableColumn) {
+        tableColumn.setJavaType(TYPE_STRING);
+        if (arraysContains(COLUMNTYPE_TIME,tableColumn.getColumnType())) {
+            tableColumn.setJavaType(TYPE_DATE);
+        }else if(arraysContains(COLUMNTYPE_NUMBER,tableColumn.getColumnType())){
+            // 如果是浮点型 统一用BigDecimal
+            String[] str = MyStrUtils.split(MyStrUtils.substringBetween(tableColumn.getColumnType(), "(", ")"), ",");
+            if (str != null && str.length == 2 && Integer.parseInt(str[1]) > 0) {
+                tableColumn.setJavaType(TYPE_BIGDECIMAL);
+            }
+            // 如果是整形
+            else if (str != null && str.length == 1 && Integer.parseInt(str[0]) <= 10) {
+                tableColumn.setJavaType(TYPE_INTEGER);
+            }
+            // 长整形
+            else {
+                tableColumn.setJavaType(TYPE_LONG);
+            }
+        }
+    }
+
+    /**
+     * 驼峰命名
+     * @param arr
+     * @param targetValue
+     */
+    public static boolean arraysContains(String[] arr, String targetValue) {
+        return Arrays.asList(arr).contains(targetValue);
+    }
+
+    /**
+     * @description: 初始化表信息
+     * @param: genTable
+     **/
+    public static void initTable(GenTable genTable) {
+        String tableName = genTable.getTableName();
+        genTable.setClassName(initTableName(tableName));
+        genTable.setAuthor(GenTableConfig.getAuthor());
+        genTable.setPackageName(GenTableConfig.getPackageName());
+    }
+
+    /**
+     * @description: 初始化表名
+     * @param: tableName
+     **/
+    private static String initTableName(String tableName) {
+        //是否要去掉表头
+        boolean autoRemovePre = GenTableConfig.getAutoRemovePre();
+        String tablePrefix = GenTableConfig.getTablePrefix();
+        if (autoRemovePre && MyStrUtils.isNotEmpty(tablePrefix)) {
+            String[] searchList = MyStrUtils.split(tablePrefix, ",");
+            tableName = replaceFirst(tableName, searchList);
+        }
+        return MyStrUtils.convertToCamelCase(tableName);
+    }
+
+    /**
+     * 批量替换前缀
+     * @param replacementm 替换值
+     * @param searchList   替换列表
+     */
+    public static String replaceFirst(String replacementm, String[] searchList) {
+        String text = replacementm;
+        for (String searchString : searchList) {
+            if (replacementm.startsWith(searchString)) {
+                text = replacementm.replaceFirst(searchString, "");
+                break;
+            }
+        }
+        return text;
+    }
+}
+```
+
+##### 5.4、测试
+
+```java
+    @Test
+    void  initTable(){
+        GenTable genTable = genTableService.initTableInfo("book_info");
+        System.out.println("genTable = " + genTable);
+    }
+```
+
+![image-20241007213811367](./assets/image-20241007213811367.png)
+
+得到我们所需要生成的基本信息，之后根据这些信息可以生成我们的模版，给我们的模版填坑。
+
+
+
+### 四、编写模版
+
+#### 1、编写实体类（domain）模版
+
+编写模版，无非就是填坑，在填坑的时候我们可以直接使用一个现成的实体类，然后再一步一步的填坑。
+
+比如使用这个GenTable类来帮助我们填坑：
+
+```java
+package com.lz.crud_generator.model;
+
+import java.util.List;
+
+/**
+ * @Author: YY
+ * @Description: GenTable
+ * @Version: 1.0
+ */
+public class GenTable {
+    public String tableName;              // 表名
+    public String tableComment;           // 表注释
+    private String className;             // 实体类名称(首字母大写)
+    private String packageName;           // 生成包路径
+    private String author;                // 作者
+    private String isPk;                  // 主键
+    private List<GenTableColumn> columns; // 列表信息
+    private static final long serialVersionUID = 1L;
+
+    public String getTableName() {
+        return tableName;
+    }
+
+    public void setTableName(String tableName) {
+        this.tableName = tableName;
+    }
+
+    public String getTableComment() {
+        return tableComment;
+    }
+
+    public void setTableComment(String tableComment) {
+        this.tableComment = tableComment;
+    }
+
+    public String getClassName() {
+        return className;
+    }
+
+    public void setClassName(String className) {
+        this.className = className;
+    }
+
+    public String getPackageName() {
+        return packageName;
+    }
+
+    public void setPackageName(String packageName) {
+        this.packageName = packageName;
+    }
+
+    public String getAuthor() {
+        return author;
+    }
+
+    public void setAuthor(String author) {
+        this.author = author;
+    }
+
+    public List<GenTableColumn> getColumns() {
+        return columns;
+    }
+
+    public void setColumns(List<GenTableColumn> columns) {
+        this.columns = columns;
+    }
+
+    public String getIsPk() {
+        return isPk;
+    }
+
+    public void setIsPk(String isPk) {
+        this.isPk = isPk;
+    }
+
+    @Override
+    public String toString() {
+        return "GenTable{" +
+                "tableName='" + tableName + '\'' +
+                ", tableComment='" + tableComment + '\'' +
+                ", className='" + className + '\'' +
+                ", packageName='" + packageName + '\'' +
+                ", author='" + author + '\'' +
+                ", isPk='" + isPk + '\'' +
+                ", columns=" + columns +
+                '}';
+    }
+}
+
+```
+
+根据这个实体类，可以给他分为：
+
+> 包路径（packageName）：实体类的路径
+>
+> 类名（className）：实体类名称
+>
+> 类注释：类的作者、类的一些注释信息，可以直接使用表注释、表名、作者
+>
+> 字段（javaField）：字段信息，字段的注释，字段的类型
+>
+> 其他：get、set、toString方法
+
+现在，就给他逐步挖坑、填坑
+
+#### 2、编写测试类加载模版
+
+这里直接使用之前写的基础模版复制过来改一些就行：
+
+```java
+    @Test
+    void generateDomain() throws IOException {
+        //设置velocity资源加载器
+        Properties prop = new Properties();
+        prop.put("file.resource.loader.class", "org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader");
+        Velocity.init(prop);
+
+        //创建Velocity容器
+        VelocityContext context = new VelocityContext();
+        GenTable genTable = genTableService.initTableInfo("book_info");
+        String tableName = genTable.getTableName();
+        String tableComment = genTable.getTableComment();
+        String className = genTable.getClassName();
+        String packageName = genTable.getPackageName();
+        String author = genTable.getAuthor();
+        List<GenTableColumn> columns = genTable.getColumns();
+        String isPk = genTable.getIsPk();
+        context.put("tableName",tableName);
+        context.put("tableComment",tableComment);
+        context.put("className",className);
+        context.put("packageName",packageName);
+        context.put("author",author);
+        context.put("columns",columns);
+        context.put("isPk",isPk);
+
+        //加载模板
+        Template tpl = Velocity.getTemplate("vms/java/domain.java.vm", "UTF-8");
+
+        //文件输出位置
+        String projectPath = System.getProperty("user.dir");
+        String outputPath = projectPath + File.separator + "src" + File.separator + "main" + File.separator + "resources" + File.separator + "generated" + File.separator + "domain.java";
+        // 创建文件对象
+        File outputFile = new File(outputPath);
+
+        // 创建目录
+        File parentDir = outputFile.getParentFile();
+        if (!parentDir.exists()) {
+            parentDir.mkdirs();
+        }
+
+        // 创建文件写入器
+        FileWriter fw = new FileWriter(outputFile);
+        //合并数据到模板
+        tpl.merge(context, fw);
+        //释放资源
+        fw.close();
+    }
+```
+
+#### 3、编写模版
+
+现更改一下类名、注释这些看是否能填入模版：
+
+```java
+package ${packageName};
+
+import java.util.List;
+
+/**
+ * @Author: ${author}
+ * @Description:
+ * ${className}
+ * ${tableComment}
+ * 表：${tableName}
+ * @Version: 1.0
+ */
+public class ${className} {
+```
+
+![image-20241007221618551](./assets/image-20241007221618551.png)
+
+字段信息：
+
+```java
+    #foreach($column in $columns)
+        #if($column.columnComment)
+    /**
+     * ${column.columnComment}
+     */
+    #end
+    private ${column.javaType} ${column.javaField};
+    #end
+```
+
+![image-20241007222907857](./assets/image-20241007222907857.png)
+
+get、set、toString：
+
+```java
+    #foreach($column in $columns)
+    #set($AttrName=$column.javaField.substring(0,1).toUpperCase() + ${column.javaField.substring(1)})
+    public ${column.javaType} get${AttrName}() {
+        return ${column.javaField};
+    }
+
+    public void set${AttrName}(${column.javaType} ${column.javaField}) {
+        this.${column.javaField} = ${column.javaField};
+    }
+    #end
+
+    @Override
+    public String toString() {
+        return "${className}{" +
+        #foreach($column in $columns)
+                "${column.javaField}='" + ${column.javaField} + '\n\'' +
+        #end
+                '}';
+    }
+```
+
+![image-20241007223757419](./assets/image-20241007223757419.png)
+
+4.更改文件输出位置：
+
+```java
+        //文件输出位置
+        String projectPath = System.getProperty("user.dir");
+        String[] packagePaths = MyStrUtils.split(packageName,".");
+        System.out.println(packageName);
+        StringBuilder packagePath = new StringBuilder();
+        for (String s : packagePaths) {
+            System.out.println(s);
+            packagePath.append(s).append(File.separator);
+        }
+        String outputPath = projectPath + File.separator + "src" + File.separator + "main" + File.separator + "resources" + File.separator + "generated" + File.separator + packagePath + className+".java";
+```
+

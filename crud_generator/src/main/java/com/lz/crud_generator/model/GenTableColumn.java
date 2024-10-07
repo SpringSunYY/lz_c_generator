@@ -94,7 +94,7 @@ public class GenTableColumn {
 
     @Override
     public String toString() {
-        return "GenTableColumn{" +
+        return "\nGenTableColumn{" +
                 "columnName='" + columnName + '\'' +
                 ", dataType='" + dataType + '\'' +
                 ", columnType='" + columnType + '\'' +

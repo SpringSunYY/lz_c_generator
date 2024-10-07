@@ -1,70 +1,52 @@
-package com.lz.crud_generator;
+package com.lz.crud_generator.utils;
 
-import com.lz.crud_generator.mapper.GenTableColumnMapper;
-import com.lz.crud_generator.mapper.GenTableMapper;
 import com.lz.crud_generator.model.GenTable;
 import com.lz.crud_generator.model.GenTableColumn;
-import com.lz.crud_generator.service.GenTableService;
-import com.lz.crud_generator.utils.MyStrUtils;
 import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.Velocity;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
 /**
  * @Project: crud_generator
- * @Package: com.lz.crud_generator
+ * @Package: com.lz.crud_generator.utils
  * @Author: YY
- * @CreateTime: 2024-09-26  20:16
- * @Description: genTableTest
+ * @CreateTime: 2024-10-07  22:49
+ * @Description: VelocityUtils
+ * 模版工具类
  * @Version: 1.0
  */
-@SpringBootTest
-public class genTableTest {
-    @Autowired
-    public GenTableColumnMapper genTableColumnMapper;
-
-    @Autowired
-    private GenTableMapper genTableMapper;
-
-    @Autowired
-    private GenTableService genTableService;
-
-    @Test
-    void getTableInfo() {
-        List<GenTableColumn> genTableColumns = genTableColumnMapper.selectTableColumnByTableName("book_info");
-        for (GenTableColumn genTableColumn : genTableColumns) {
-            System.out.println("genTableColumn = " + genTableColumn);
+public class VelocityUtils {
+    /**
+     * 初始化vm方法
+     */
+    public static void initVelocity() {
+        Properties p = new Properties();
+        try {
+            // 加载classpath目录下的vm文件
+            p.setProperty("resource.loader.file.class", "org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader");
+            // 定义字符集
+            p.setProperty(Velocity.INPUT_ENCODING, "UTF-8");
+            // 初始化Velocity引擎，指定配置Properties
+            Velocity.init(p);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
-        GenTable genTable = genTableMapper.selectTableByTableName("book_info");
-        System.out.println("genTable = " + genTable);
     }
 
-    @Test
-    void initTable() {
-        GenTable genTable = genTableService.initTableInfo("book_info");
-        System.out.println("genTable = " + genTable);
-    }
-
-    @Test
-    void generateDomain() throws IOException {
-        //设置velocity资源加载器
-        Properties prop = new Properties();
-        prop.put("file.resource.loader.class", "org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader");
-        Velocity.init(prop);
-
+    /**
+     * 设置模板变量信息
+     *
+     * @return 模板列表
+     */
+    public static VelocityContext prepareContext(GenTable genTable) {
         //创建Velocity容器
         VelocityContext context = new VelocityContext();
-        GenTable genTable = genTableService.initTableInfo("book_info");
         String tableName = genTable.getTableName();
         String tableComment = genTable.getTableComment();
         String className = genTable.getClassName();
@@ -79,10 +61,22 @@ public class genTableTest {
         context.put("author", author);
         context.put("columns", columns);
         context.put("isPk", isPk);
+        return context;
+    }
 
-        //加载模板
-        Template tpl = Velocity.getTemplate("vms/java/domain.java.vm", "UTF-8");
+    /**
+     * 加载模板
+     *
+     * @param path 加载模版
+     * @return 模版
+     */
+    public static Template loadTemplate(String path) {
+        return Velocity.getTemplate(path, "UTF-8");
+    }
 
+    public static void outputFile(String packageName,String className){
+        Template tpl = loadTemplate("");
+        VelocityContext context = prepareContext(new GenTable());
         //文件输出位置
         String projectPath = System.getProperty("user.dir");
         String[] packagePaths = MyStrUtils.split(packageName,".");
@@ -103,10 +97,19 @@ public class genTableTest {
         }
 
         // 创建文件写入器
-        FileWriter fw = new FileWriter(outputFile);
+        FileWriter fw = null;
+        try {
+            fw = new FileWriter(outputFile);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         //合并数据到模板
         tpl.merge(context, fw);
         //释放资源
-        fw.close();
+        try {
+            fw.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
