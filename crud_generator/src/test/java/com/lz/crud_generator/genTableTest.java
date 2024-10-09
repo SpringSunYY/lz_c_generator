@@ -6,6 +6,7 @@ import com.lz.crud_generator.model.GenTable;
 import com.lz.crud_generator.model.GenTableColumn;
 import com.lz.crud_generator.service.GenTableService;
 import com.lz.crud_generator.utils.MyStrUtils;
+import com.lz.crud_generator.utils.VelocityUtils;
 import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.Velocity;
@@ -86,7 +87,6 @@ public class genTableTest {
         //文件输出位置
         String projectPath = System.getProperty("user.dir");
         String[] packagePaths = MyStrUtils.split(packageName,".");
-        System.out.println(packageName);
         StringBuilder packagePath = new StringBuilder();
         for (String s : packagePaths) {
             System.out.println(s);
@@ -108,5 +108,11 @@ public class genTableTest {
         tpl.merge(context, fw);
         //释放资源
         fw.close();
+    }
+
+    @Test
+    public void genTable(){
+        GenTable genTable = genTableService.initTableInfo("book_info");
+        VelocityUtils.generateCode(genTable);
     }
 }
