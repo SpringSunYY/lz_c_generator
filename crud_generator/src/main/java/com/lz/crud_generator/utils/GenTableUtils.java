@@ -4,7 +4,6 @@ import com.lz.crud_generator.config.GenTableConfig;
 import com.lz.crud_generator.model.GenTable;
 import com.lz.crud_generator.model.GenTableColumn;
 
-import javax.swing.table.TableColumn;
 import java.util.Arrays;
 import java.util.List;
 
@@ -25,14 +24,16 @@ public class GenTableUtils {
      **/
     public static void initTableInfo(GenTable genTable, List<GenTableColumn> tableColumns) {
         for (GenTableColumn tableColumn : tableColumns) {
-            //判断主键
-            if (tableColumn.getColumnKey().equals(PRI)) {
-                genTable.setIsPk(tableColumn.getColumnName());
-            }
             //初始化Java类型
             initTableColumnJavaType(tableColumn);
             //初始化Java字段
             initTableColumnJavaFiled(tableColumn);
+            //判断主键
+            if (tableColumn.getColumnKey().equals(PRI)) {
+                genTable.setIsPk(tableColumn.getColumnName());
+                genTable.setIsPkJavaType(tableColumn.getJavaType());
+                genTable.setIsPkJavaFiled(tableColumn.getJavaField());
+            }
         }
         genTable.setColumns(tableColumns);
     }
@@ -51,9 +52,10 @@ public class GenTableUtils {
      */
     private static void initTableColumnJavaType(GenTableColumn tableColumn) {
         tableColumn.setJavaType(TYPE_STRING);
-        if (arraysContains(COLUMNTYPE_TIME,tableColumn.getColumnType())) {
+        String dataType = getDbType(tableColumn.getDataType());
+        if (arraysContains(COLUMNTYPE_TIME, dataType)) {
             tableColumn.setJavaType(TYPE_DATE);
-        }else if(arraysContains(COLUMNTYPE_NUMBER,tableColumn.getColumnType())){
+        } else if (arraysContains(COLUMNTYPE_NUMBER, dataType)) {
             // 如果是浮点型 统一用BigDecimal
             String[] str = MyStrUtils.split(MyStrUtils.substringBetween(tableColumn.getColumnType(), "(", ")"), ",");
             if (str != null && str.length == 2 && Integer.parseInt(str[1]) > 0) {
@@ -70,8 +72,18 @@ public class GenTableUtils {
         }
     }
 
+    public static String getDbType(String columnType) {
+        //如果有括号且在后面，则截取括号之前的内容
+        if (MyStrUtils.indexOf(columnType, "(") > 0) {
+            return MyStrUtils.substringBefore(columnType, "(");
+        } else {
+            return columnType;
+        }
+    }
+
     /**
      * 驼峰命名
+     *
      * @param arr
      * @param targetValue
      */
@@ -107,6 +119,7 @@ public class GenTableUtils {
 
     /**
      * 批量替换前缀
+     *
      * @param replacementm 替换值
      * @param searchList   替换列表
      */

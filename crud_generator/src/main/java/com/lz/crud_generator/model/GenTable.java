@@ -17,6 +17,8 @@ public class GenTable {
     private String packageName;           // 生成包路径
     private String author;                // 作者
     private String isPk;                  // 主键
+    private String isPkJavaType;              // 主键类型
+    private String isPkJavaFiled;         // 主键java字段
     private List<GenTableColumn> columns; // 列表信息
     private static final long serialVersionUID = 1L;
 
@@ -60,20 +62,36 @@ public class GenTable {
         this.author = author;
     }
 
-    public List<GenTableColumn> getColumns() {
-        return columns;
-    }
-
-    public void setColumns(List<GenTableColumn> columns) {
-        this.columns = columns;
-    }
-
     public String getIsPk() {
         return isPk;
     }
 
     public void setIsPk(String isPk) {
         this.isPk = isPk;
+    }
+
+    public String getIsPkJavaType() {
+        return isPkJavaType;
+    }
+
+    public void setIsPkJavaType(String isPkJavaType) {
+        this.isPkJavaType = isPkJavaType;
+    }
+
+    public String getIsPkJavaFiled() {
+        return isPkJavaFiled;
+    }
+
+    public void setIsPkJavaFiled(String isPkJavaFiled) {
+        this.isPkJavaFiled = isPkJavaFiled;
+    }
+
+    public List<GenTableColumn> getColumns() {
+        return columns;
+    }
+
+    public void setColumns(List<GenTableColumn> columns) {
+        this.columns = columns;
     }
 
     @Override
@@ -85,6 +103,8 @@ public class GenTable {
                 ", packageName='" + packageName + '\'' +
                 ", author='" + author + '\'' +
                 ", isPk='" + isPk + '\'' +
+                ", isPkJavaType='" + isPkJavaType + '\'' +
+                ", isPkJavaFiled='" + isPkJavaFiled + '\'' +
                 ", columns=" + columns +
                 '}';
     }

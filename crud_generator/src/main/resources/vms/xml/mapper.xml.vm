@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="${packageName}.mapper.${className}Mapper">
+    
+    <resultMap type="${className}" id="${className}Result">
+#foreach ($column in $columns)
+        <result property="${column.javaField}"    column="${column.columnName}"    />
+#end
+    </resultMap>
+
+    <sql id="select${className}Vo">
+        select#foreach($column in $columns) $column.columnName#if($foreach.count != $columns.size()),#end#end from ${tableName}
+    </sql>
+
+    <select id="select${className}List" parameterType="${className}" resultMap="${className}Result">
+        <include refid="select${className}Vo"/>
+        <where>
+            #foreach($column in $columns)
+            <if test="$column.javaField != null #if($column.javaType == 'String' ) and $column.javaField != ''#end">
+                and $column.columnName = #{$column.javaField}
+            </if>
+            #end
+        </where>
+    </select>
+
+    #set($isPkJavaFieldAttrName=${isPkJavaFiled.substring(0,1).toUpperCase()} + ${isPkJavaFiled.substring(1)})
+    <select id="select${className}By${isPkJavaFieldAttrName}" parameterType="${isPkJavaType}" resultMap="${className}Result">
+        <include refid="select${className}Vo"/>
+        where ${isPk} = #{${isPkJavaFiled}}
+    </select>
+        
+    <insert id="insert${className}" parameterType="${className}">
+        insert into ${tableName}
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+#foreach($column in $columns)
+            <if test="$column.javaField != null#if($column.javaType == 'String' ) and $column.javaField != ''#end">$column.columnName,</if>
+#end
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+#foreach($column in $columns)
+            <if test="$column.javaField != null#if($column.javaType == 'String' ) and $column.javaField != ''#end">#{$column.javaField},</if>
+#end
+         </trim>
+    </insert>
+
+    <update id="update${className}" parameterType="${className}">
+        update ${tableName}
+        <trim prefix="SET" suffixOverrides=",">
+#foreach($column in $columns)
+            <if test="$column.javaField != null#if($column.javaType == 'String') and $column.javaField != ''#end">$column.columnName = #{$column.javaField},</if>
+#end
+        </trim>
+        where ${isPk} = #{${isPkJavaFiled}}
+    </update>
+
+    <delete id="delete${className}By${isPkJavaFieldAttrName}" parameterType="${isPkJavaType}">
+        delete from ${tableName} where ${isPk} = #{${isPkJavaFiled}}
+    </delete>
+
+    <delete id="delete${className}By${isPkJavaFieldAttrName}s" parameterType="String">
+        delete from ${tableName} where ${isPk} in
+        <foreach item="${isPkJavaFiled}Item" collection="array" open="(" separator="," close=")">
+            ${isPkJavaFiled}Item
+        </foreach>
+    </delete>
+
+</mapper>

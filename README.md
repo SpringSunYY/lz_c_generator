@@ -1459,44 +1459,438 @@ public class genTableTest {
 ##### 5.1、复制String工具类
 
 ```java
-public class MyStrUtils extends StrUtil {
+package com.lz.crud_generator.utils;
 
-    /** 空字符串 */
+import org.springframework.util.AntPathMatcher;
+
+import java.util.*;
+
+/**
+ * 字符串工具类
+ */
+public class MyStrUtils extends org.apache.commons.lang3.StringUtils {
+    /**
+     * 空字符串
+     */
     private static final String NULLSTR = "";
 
-    /** 下划线 */
+    /**
+     * 下划线
+     */
     private static final char SEPARATOR = '_';
 
-    /** 星号 */
-    private static final char ASTERISK = '*';
     /**
-     * 将下划线大写方式命名的字符串转换为驼峰式。如果转换前的下划线大写方式命名的字符串为空，则返回空字符串。
-     * 例如：HELLO_WORLD->HelloWorld
+     * 星号
+     */
+    private static final char ASTERISK = '*';
+
+    /**
+     * 获取参数不为空值
+     *
+     * @param value defaultValue 要判断的value
+     * @return value 返回值
+     */
+    public static <T> T nvl(T value, T defaultValue) {
+        return value != null ? value : defaultValue;
+    }
+
+    /**
+     * * 判断一个Collection是否为空， 包含List，Set，Queue
+     *
+     * @param coll 要判断的Collection
+     * @return true：为空 false：非空
+     */
+    public static boolean isEmpty(Collection<?> coll) {
+        return isNull(coll) || coll.isEmpty();
+    }
+
+    /**
+     * * 判断一个Collection是否非空，包含List，Set，Queue
+     *
+     * @param coll 要判断的Collection
+     * @return true：非空 false：空
+     */
+    public static boolean isNotEmpty(Collection<?> coll) {
+        return !isEmpty(coll);
+    }
+
+    /**
+     * * 判断一个对象数组是否为空
+     *
+     * @param objects 要判断的对象数组
+     *                * @return true：为空 false：非空
+     */
+    public static boolean isEmpty(Object[] objects) {
+        return isNull(objects) || (objects.length == 0);
+    }
+
+    /**
+     * * 判断一个对象数组是否非空
+     *
+     * @param objects 要判断的对象数组
+     * @return true：非空 false：空
+     */
+    public static boolean isNotEmpty(Object[] objects) {
+        return !isEmpty(objects);
+    }
+
+    /**
+     * * 判断一个Map是否为空
+     *
+     * @param map 要判断的Map
+     * @return true：为空 false：非空
+     */
+    public static boolean isEmpty(Map<?, ?> map) {
+        return isNull(map) || map.isEmpty();
+    }
+
+    /**
+     * * 判断一个Map是否为空
+     *
+     * @param map 要判断的Map
+     * @return true：非空 false：空
+     */
+    public static boolean isNotEmpty(Map<?, ?> map) {
+        return !isEmpty(map);
+    }
+
+    /**
+     * * 判断一个字符串是否为空串
+     *
+     * @param str String
+     * @return true：为空 false：非空
+     */
+    public static boolean isEmpty(String str) {
+        return isNull(str) || NULLSTR.equals(str.trim());
+    }
+
+    /**
+     * * 判断一个字符串是否为非空串
+     *
+     * @param str String
+     * @return true：非空串 false：空串
+     */
+    public static boolean isNotEmpty(String str) {
+        return !isEmpty(str);
+    }
+
+    /**
+     * * 判断一个对象是否为空
+     *
+     * @param object Object
+     * @return true：为空 false：非空
+     */
+    public static boolean isNull(Object object) {
+        return object == null;
+    }
+
+    /**
+     * * 判断一个对象是否非空
+     *
+     * @param object Object
+     * @return true：非空 false：空
+     */
+    public static boolean isNotNull(Object object) {
+        return !isNull(object);
+    }
+
+    /**
+     * * 判断一个对象是否是数组类型（Java基本型别的数组）
+     *
+     * @param object 对象
+     * @return true：是数组 false：不是数组
+     */
+    public static boolean isArray(Object object) {
+        return isNotNull(object) && object.getClass().isArray();
+    }
+
+    /**
+     * 去空格
+     */
+    public static String trim(String str) {
+        return (str == null ? "" : str.trim());
+    }
+
+    /**
+     * 替换指定字符串的指定区间内字符为"*"
+     *
+     * @param str          字符串
+     * @param startInclude 开始位置（包含）
+     * @param endExclude   结束位置（不包含）
+     * @return 替换后的字符串
+     */
+    public static String hide(CharSequence str, int startInclude, int endExclude) {
+        if (isEmpty(str)) {
+            return NULLSTR;
+        }
+        final int strLength = str.length();
+        if (startInclude > strLength) {
+            return NULLSTR;
+        }
+        if (endExclude > strLength) {
+            endExclude = strLength;
+        }
+        if (startInclude > endExclude) {
+            // 如果起始位置大于结束位置，不替换
+            return NULLSTR;
+        }
+        final char[] chars = new char[strLength];
+        for (int i = 0; i < strLength; i++) {
+            if (i >= startInclude && i < endExclude) {
+                chars[i] = ASTERISK;
+            } else {
+                chars[i] = str.charAt(i);
+            }
+        }
+        return new String(chars);
+    }
+
+    /**
+     * 截取字符串
+     *
+     * @param str   字符串
+     * @param start 开始
+     * @return 结果
+     */
+    public static String substring(final String str, int start) {
+        if (str == null) {
+            return NULLSTR;
+        }
+
+        if (start < 0) {
+            start = str.length() + start;
+        }
+
+        if (start < 0) {
+            start = 0;
+        }
+        if (start > str.length()) {
+            return NULLSTR;
+        }
+
+        return str.substring(start);
+    }
+
+    /**
+     * 截取字符串
+     *
+     * @param str   字符串
+     * @param start 开始
+     * @param end   结束
+     * @return 结果
+     */
+    public static String substring(final String str, int start, int end) {
+        if (str == null) {
+            return NULLSTR;
+        }
+
+        if (end < 0) {
+            end = str.length() + end;
+        }
+        if (start < 0) {
+            start = str.length() + start;
+        }
+
+        if (end > str.length()) {
+            end = str.length();
+        }
+
+        if (start > end) {
+            return NULLSTR;
+        }
+
+        if (start < 0) {
+            start = 0;
+        }
+        if (end < 0) {
+            end = 0;
+        }
+
+        return str.substring(start, end);
+    }
+
+    /**
+     * 判断是否为空，并且不是空白字符
+     *
+     * @param str 要判断的value
+     * @return 结果
+     */
+    public static boolean hasText(String str) {
+        return (str != null && !str.isEmpty() && containsText(str));
+    }
+
+    private static boolean containsText(CharSequence str) {
+        int strLen = str.length();
+        for (int i = 0; i < strLen; i++) {
+            if (!Character.isWhitespace(str.charAt(i))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+
+    /**
+     * 字符串转set
+     *
+     * @param str 字符串
+     * @param sep 分隔符
+     * @return set集合
+     */
+    public static final Set<String> str2Set(String str, String sep) {
+        return new HashSet<String>(str2List(str, sep, true, false));
+    }
+
+    /**
+     * 字符串转list
+     *
+     * @param str         字符串
+     * @param sep         分隔符
+     * @param filterBlank 过滤纯空白
+     * @param trim        去掉首尾空白
+     * @return list集合
+     */
+    public static final List<String> str2List(String str, String sep, boolean filterBlank, boolean trim) {
+        List<String> list = new ArrayList<String>();
+        if (com.yy.generate.utils.MyStrUtils.isEmpty(str)) {
+            return list;
+        }
+
+        // 过滤空白字符串
+        if (filterBlank && com.yy.generate.utils.MyStrUtils.isBlank(str)) {
+            return list;
+        }
+        String[] split = str.split(sep);
+        for (String string : split) {
+            if (filterBlank && com.yy.generate.utils.MyStrUtils.isBlank(string)) {
+                continue;
+            }
+            if (trim) {
+                string = string.trim();
+            }
+            list.add(string);
+        }
+
+        return list;
+    }
+
+    /**
+     * 判断给定的collection列表中是否包含数组array 判断给定的数组array中是否包含给定的元素value
+     *
+     * @param collection 给定的集合
+     * @param array      给定的数组
+     * @return boolean 结果
+     */
+    public static boolean containsAny(Collection<String> collection, String... array) {
+        if (isEmpty(collection) || isEmpty(array)) {
+            return false;
+        } else {
+            for (String str : array) {
+                if (collection.contains(str)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+    }
+
+    /**
+     * 查找指定字符串是否包含指定字符串列表中的任意一个字符串同时串忽略大小写
+     *
+     * @param cs                  指定字符串
+     * @param searchCharSequences 需要检查的字符串数组
+     * @return 是否包含任意一个字符串
+     */
+    public static boolean containsAnyIgnoreCase(CharSequence cs, CharSequence... searchCharSequences) {
+        if (isEmpty(cs) || isEmpty(searchCharSequences)) {
+            return false;
+        }
+        for (CharSequence testStr : searchCharSequences) {
+            if (containsIgnoreCase(cs, testStr)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * 驼峰转下划线命名
+     */
+    public static String toUnderScoreCase(String str) {
+        if (str == null) {
+            return null;
+        }
+        StringBuilder sb = new StringBuilder();
+        // 前置字符是否大写
+        boolean preCharIsUpperCase = true;
+        // 当前字符是否大写
+        boolean curreCharIsUpperCase = true;
+        // 下一字符是否大写
+        boolean nexteCharIsUpperCase = true;
+        for (int i = 0; i < str.length(); i++) {
+            char c = str.charAt(i);
+            if (i > 0) {
+                preCharIsUpperCase = Character.isUpperCase(str.charAt(i - 1));
+            } else {
+                preCharIsUpperCase = false;
+            }
+
+            curreCharIsUpperCase = Character.isUpperCase(c);
+
+            if (i < (str.length() - 1)) {
+                nexteCharIsUpperCase = Character.isUpperCase(str.charAt(i + 1));
+            }
+
+            if (preCharIsUpperCase && curreCharIsUpperCase && !nexteCharIsUpperCase) {
+                sb.append(SEPARATOR);
+            } else if ((i != 0 && !preCharIsUpperCase) && curreCharIsUpperCase) {
+                sb.append(SEPARATOR);
+            }
+            sb.append(Character.toLowerCase(c));
+        }
+
+        return sb.toString();
+    }
+
+    /**
+     * 是否包含字符串
+     *
+     * @param str  验证字符串
+     * @param strs 字符串组
+     * @return 包含返回true
+     */
+    public static boolean inStringIgnoreCase(String str, String... strs) {
+        if (str != null && strs != null) {
+            for (String s : strs) {
+                if (str.equalsIgnoreCase(trim(s))) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * 将下划线大写方式命名的字符串转换为驼峰式。如果转换前的下划线大写方式命名的字符串为空，则返回空字符串。 例如：HELLO_WORLD->HelloWorld
      *
      * @param name 转换前的下划线大写方式命名的字符串
      * @return 转换后的驼峰式命名的字符串
      */
-    public static String convertToCamelCase(String name)
-    {
+    public static String convertToCamelCase(String name) {
         StringBuilder result = new StringBuilder();
         // 快速检查
-        if (name == null || name.isEmpty())
-        {
+        if (name == null || name.isEmpty()) {
             // 没必要转换
             return "";
-        }
-        else if (!name.contains("_"))
-        {
+        } else if (!name.contains("_")) {
             // 不含下划线，仅将首字母大写
             return name.substring(0, 1).toUpperCase() + name.substring(1);
         }
         // 用下划线将原始字符串分割
         String[] camels = name.split("_");
-        for (String camel : camels)
-        {
+        for (String camel : camels) {
             // 跳过原始字符串中开头、结尾的下换线或双重下划线
-            if (camel.isEmpty())
-            {
+            if (camel.isEmpty()) {
                 continue;
             }
             // 首字母大写
@@ -1510,34 +1904,25 @@ public class MyStrUtils extends StrUtil {
      * 驼峰式命名法
      * 例如：user_name->userName
      */
-    public static String toCamelCase(String s)
-    {
-        if (s == null)
-        {
+    public static String toCamelCase(String s) {
+        if (s == null) {
             return null;
         }
-        if (s.indexOf(SEPARATOR) == -1)
-        {
+        if (s.indexOf(SEPARATOR) == -1) {
             return s;
         }
         s = s.toLowerCase();
         StringBuilder sb = new StringBuilder(s.length());
         boolean upperCase = false;
-        for (int i = 0; i < s.length(); i++)
-        {
+        for (int i = 0; i < s.length(); i++) {
             char c = s.charAt(i);
 
-            if (c == SEPARATOR)
-            {
+            if (c == SEPARATOR) {
                 upperCase = true;
-            }
-            else if (upperCase)
-            {
+            } else if (upperCase) {
                 sb.append(Character.toUpperCase(c));
                 upperCase = false;
-            }
-            else
-            {
+            } else {
                 sb.append(c);
             }
         }
@@ -1545,110 +1930,105 @@ public class MyStrUtils extends StrUtil {
     }
 
     /**
-     * 分割字符
-     * @param str
-     * @param separatorChars
+     * 查找指定字符串是否匹配指定字符串列表中的任意一个字符串
+     *
+     * @param str  指定字符串
+     * @param strs 需要检查的字符串数组
+     * @return 是否匹配
      */
-    public static String[] split(final String str, final String separatorChars) {
-        return splitWorker(str, separatorChars, -1, false);
-    }
-    private static String[] splitWorker(final String str, final String separatorChars, final int max, final boolean preserveAllTokens) {
-        if (str == null) {
-            return null;
+    public static boolean matches(String str, List<String> strs) {
+        if (isEmpty(str) || isEmpty(strs)) {
+            return false;
         }
-        final int len = str.length();
-        if (len == 0) {
-            return ArrayUtils.EMPTY_STRING_ARRAY;
-        }
-        final List<String> list = new ArrayList<>();
-        int sizePlus1 = 1;
-        int i = 0;
-        int start = 0;
-        boolean match = false;
-        boolean lastMatch = false;
-        if (separatorChars == null) {
-            // Null separator means use whitespace
-            while (i < len) {
-                if (Character.isWhitespace(str.charAt(i))) {
-                    if (match || preserveAllTokens) {
-                        lastMatch = true;
-                        if (sizePlus1++ == max) {
-                            i = len;
-                            lastMatch = false;
-                        }
-                        list.add(str.substring(start, i));
-                        match = false;
-                    }
-                    start = ++i;
-                    continue;
-                }
-                lastMatch = false;
-                match = true;
-                i++;
-            }
-        } else if (separatorChars.length() == 1) {
-            // Optimise 1 character case
-            final char sep = separatorChars.charAt(0);
-            while (i < len) {
-                if (str.charAt(i) == sep) {
-                    if (match || preserveAllTokens) {
-                        lastMatch = true;
-                        if (sizePlus1++ == max) {
-                            i = len;
-                            lastMatch = false;
-                        }
-                        list.add(str.substring(start, i));
-                        match = false;
-                    }
-                    start = ++i;
-                    continue;
-                }
-                lastMatch = false;
-                match = true;
-                i++;
-            }
-        } else {
-            // standard case
-            while (i < len) {
-                if (separatorChars.indexOf(str.charAt(i)) >= 0) {
-                    if (match || preserveAllTokens) {
-                        lastMatch = true;
-                        if (sizePlus1++ == max) {
-                            i = len;
-                            lastMatch = false;
-                        }
-                        list.add(str.substring(start, i));
-                        match = false;
-                    }
-                    start = ++i;
-                    continue;
-                }
-                lastMatch = false;
-                match = true;
-                i++;
+        for (String pattern : strs) {
+            if (isMatch(pattern, str)) {
+                return true;
             }
         }
-        if (match || preserveAllTokens && lastMatch) {
-            list.add(str.substring(start, i));
-        }
-        return list.toArray(ArrayUtils.EMPTY_STRING_ARRAY);
+        return false;
     }
 
     /**
-     * 获取两个字符之内的字符串
+     * 判断url是否与规则配置:
+     * ? 表示单个字符;
+     * * 表示一层路径内的任意字符串，不可跨层级;
+     * ** 表示任意层路径;
+     *
+     * @param pattern 匹配规则
+     * @param url     需要匹配的url
+     * @return
      */
-    public static String substringBetween(final String str, final String open, final String close) {
-        if (!ObjectUtils.allNotNull(str, open, close)) {
-            return null;
-        }
-        final int start = str.indexOf(open);
-        if (start != INDEX_NOT_FOUND) {
-            final int end = str.indexOf(close, start + open.length());
-            if (end != INDEX_NOT_FOUND) {
-                return str.substring(start + open.length(), end);
+    public static boolean isMatch(String pattern, String url) {
+        AntPathMatcher matcher = new AntPathMatcher();
+        return matcher.match(pattern, url);
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> T cast(Object obj) {
+        return (T) obj;
+    }
+
+    /**
+     * 数字左边补齐0，使之达到指定长度。注意，如果数字转换为字符串后，长度大于size，则只保留 最后size个字符。
+     *
+     * @param num  数字对象
+     * @param size 字符串指定长度
+     * @return 返回数字的字符串格式，该字符串为指定长度。
+     */
+    public static final String padl(final Number num, final int size) {
+        return padl(num.toString(), size, '0');
+    }
+
+    /**
+     * 字符串左补齐。如果原始字符串s长度大于size，则只保留最后size个字符。
+     *
+     * @param s    原始字符串
+     * @param size 字符串指定长度
+     * @param c    用于补齐的字符
+     * @return 返回指定长度的字符串，由原字符串左补齐或截取得到。
+     */
+    public static final String padl(final String s, final int size, final char c) {
+        final StringBuilder sb = new StringBuilder(size);
+        if (s != null) {
+            final int len = s.length();
+            if (s.length() <= size) {
+                for (int i = size - len; i > 0; i--) {
+                    sb.append(c);
+                }
+                sb.append(s);
+            } else {
+                return s.substring(len - size, len);
+            }
+        } else {
+            for (int i = size; i > 0; i--) {
+                sb.append(c);
             }
         }
-        return null;
+        return sb.toString();
+    }
+
+    /**
+     * 格式化文本, {} 表示占位符<br>
+     * 此方法只是简单将占位符 {} 按照顺序替换为参数<br>
+     * 如果想输出 {} 使用 \\转义 { 即可，如果想输出 {} 之前的 \ 使用双转义符 \\\\ 即可<br>
+     * 例：<br>
+     * 通常使用：format("this is {} for {}", "a", "b") -> this is a for b<br>
+     * 转义{}： format("this is \\{} for {}", "a", "b") -> this is \{} for a<br>
+     * 转义\： format("this is \\\\{} for {}", "a", "b") -> this is \a for b<br>
+     *
+     * @param template 文本模板，被替换的部分用 {} 表示
+     * @param params   参数值
+     * @return 格式化后的文本
+     */
+    public static String format(String template, Object... params) {
+        if (isEmpty(params) || isEmpty(template)) {
+            return template;
+        }
+        for (Object param : params) {
+            template = template.replaceFirst("\\{}", String.valueOf(param));
+        }
+
+        return template;
     }
 }
 ```
@@ -1707,6 +2087,7 @@ public class GenTableUtils {
 
     /**
      * 初始化Java字段
+     *
      * @param tableColumn
      */
     private static void initTableColumnJavaFiled(GenTableColumn tableColumn) {
@@ -1715,13 +2096,15 @@ public class GenTableUtils {
 
     /**
      * 初始化Java类型
+     *
      * @param tableColumn
      */
     private static void initTableColumnJavaType(GenTableColumn tableColumn) {
         tableColumn.setJavaType(TYPE_STRING);
-        if (arraysContains(COLUMNTYPE_TIME,tableColumn.getColumnType())) {
+        String dataType = getDbType(tableColumn.getDataType());
+        if (arraysContains(COLUMNTYPE_TIME, dataType)) {
             tableColumn.setJavaType(TYPE_DATE);
-        }else if(arraysContains(COLUMNTYPE_NUMBER,tableColumn.getColumnType())){
+        } else if (arraysContains(COLUMNTYPE_NUMBER, dataType)) {
             // 如果是浮点型 统一用BigDecimal
             String[] str = MyStrUtils.split(MyStrUtils.substringBetween(tableColumn.getColumnType(), "(", ")"), ",");
             if (str != null && str.length == 2 && Integer.parseInt(str[1]) > 0) {
@@ -1738,8 +2121,18 @@ public class GenTableUtils {
         }
     }
 
+    public static String getDbType(String columnType) {
+        //如果有括号且在后面，则截取括号之前的内容
+        if (MyStrUtils.indexOf(columnType, "(") > 0) {
+            return MyStrUtils.substringBefore(columnType, "(");
+        } else {
+            return columnType;
+        }
+    }
+
     /**
      * 驼峰命名
+     *
      * @param arr
      * @param targetValue
      */
@@ -1775,6 +2168,7 @@ public class GenTableUtils {
 
     /**
      * 批量替换前缀
+     *
      * @param replacementm 替换值
      * @param searchList   替换列表
      */
@@ -1789,6 +2183,7 @@ public class GenTableUtils {
         return text;
     }
 }
+
 ```
 
 ##### 5.4、测试
@@ -2076,7 +2471,7 @@ get、set、toString：
                "vms/java/mapper.java.vm",
                "vms/java/service.java.vm",
                "vms/java/serviceImpl.java.vm",
-               "vms/mapper/mapper.xml.vm",
+               "vms/xml/mapper.xml.vm",
        };
    ```
 
@@ -2146,7 +2541,7 @@ get、set、toString：
 
 5. 获取文件输出路径：
 
-   ```
+   ```java
        /**
         * 获取文件名
         */
@@ -2219,4 +2614,72 @@ get、set、toString：
        }
    ```
 
-   
+7. 优化表生成信息
+
+   因为之前我们没有设置主键的类型在生成表信息里面，所以需要加一个主键字段类型**GenTable**
+
+   ```java
+       private String isPkJavaType;          // 主键类型
+       private String isPkJavaFiled;         // 主键java字段
+   ```
+
+   修改**GenTableUtils**
+
+   ```java
+       /**
+        * @description: 初始化表信息
+        * @param: genTable
+        **/
+       public static void initTableInfo(GenTable genTable, List<GenTableColumn> tableColumns) {
+           for (GenTableColumn tableColumn : tableColumns) {
+               //初始化Java类型
+               initTableColumnJavaType(tableColumn);
+               //初始化Java字段
+               initTableColumnJavaFiled(tableColumn);
+               //判断主键
+               if (tableColumn.getColumnKey().equals(PRI)) {
+                   genTable.setIsPk(tableColumn.getColumnName());
+                   genTable.setIsPkJavaType(tableColumn.getJavaType());
+                   genTable.setIsPkJavaFiled(tableColumn.getJavaField());
+               }
+           }
+           genTable.setColumns(tableColumns);
+       }
+   ```
+
+   修改**VelocityUtils**
+
+   ```java
+       /**
+        * 设置模板变量信息
+        *
+        * @param genTable 表信息
+        * @return 模板列表
+        */
+       public static VelocityContext prepareContext(GenTable genTable) {
+           //创建Velocity容器
+           VelocityContext context = new VelocityContext();
+           String tableName = genTable.getTableName();
+           String tableComment = genTable.getTableComment();
+           String className = genTable.getClassName();
+           String packageName = genTable.getPackageName();
+           String author = genTable.getAuthor();
+           List<GenTableColumn> columns = genTable.getColumns();
+           String isPk = genTable.getIsPk();
+           String isPkJavaType = genTable.getIsPkJavaType();
+           String isPkJavaFiled = genTable.getIsPkJavaFiled();
+           context.put("tableName", tableName);
+           context.put("tableComment", tableComment);
+           context.put("className", className);
+           context.put("packageName", packageName);
+           context.put("author", author);
+           context.put("columns", columns);
+           context.put("isPk", isPk);
+           context.put("isPkJavaType", isPkJavaType);
+           context.put("isPkJavaFiled", isPkJavaFiled);
+           return context;
+       }
+   ```
+
+   ![image-20241010223632570](./assets/image-20241010223632570.png)
+

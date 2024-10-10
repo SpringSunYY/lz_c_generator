@@ -2,6 +2,7 @@ package com.lz.crud_generator.utils;
 
 import com.lz.crud_generator.model.GenTable;
 import com.lz.crud_generator.model.GenTableColumn;
+
 import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.Velocity;
@@ -40,7 +41,7 @@ public class VelocityUtils {
             "vms/java/mapper.java.vm",
             "vms/java/service.java.vm",
             "vms/java/serviceImpl.java.vm",
-            "vms/mapper/mapper.xml.vm",
+            "vms/xml/mapper.xml.vm",
     };
 
     /**
@@ -49,10 +50,11 @@ public class VelocityUtils {
     public static void generateCode(GenTable genTable) {
         //初始化vm方法
         initVelocity();
-        String templateTypePath = TEMPLATE_TYPE[0];
-        Template template = loadTemplate(templateTypePath);
-        VelocityContext context = prepareContext(genTable);
-        outputFile(templateTypePath, genTable, template, context);
+        for (String templateTypePath : TEMPLATE_TYPE) {
+            Template template = loadTemplate(templateTypePath);
+            VelocityContext context = prepareContext(genTable);
+            outputFile(templateTypePath, genTable, template, context);
+        }
     }
 
     /**
@@ -88,6 +90,8 @@ public class VelocityUtils {
         String author = genTable.getAuthor();
         List<GenTableColumn> columns = genTable.getColumns();
         String isPk = genTable.getIsPk();
+        String isPkJavaType = genTable.getIsPkJavaType();
+        String isPkJavaFiled = genTable.getIsPkJavaFiled();
         context.put("tableName", tableName);
         context.put("tableComment", tableComment);
         context.put("className", className);
@@ -95,6 +99,8 @@ public class VelocityUtils {
         context.put("author", author);
         context.put("columns", columns);
         context.put("isPk", isPk);
+        context.put("isPkJavaType", isPkJavaType);
+        context.put("isPkJavaFiled", isPkJavaFiled);
         return context;
     }
 
