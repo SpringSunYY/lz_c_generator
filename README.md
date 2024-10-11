@@ -2090,7 +2090,7 @@ public class GenTableUtils {
      *
      * @param tableColumn
      */
-    private static void initTableColumnJavaFiled(GenTableColumn tableColumn) {
+    private static void initTableColumnJavaField(GenTableColumn tableColumn) {
         tableColumn.setJavaField(MyStrUtils.toCamelCase(tableColumn.getColumnName()));
     }
 
@@ -2620,7 +2620,7 @@ get、set、toString：
 
    ```java
        private String isPkJavaType;          // 主键类型
-       private String isPkJavaFiled;         // 主键java字段
+       private String isPkJavaField;         // 主键java字段
    ```
 
    修改**GenTableUtils**
@@ -2635,12 +2635,12 @@ get、set、toString：
                //初始化Java类型
                initTableColumnJavaType(tableColumn);
                //初始化Java字段
-               initTableColumnJavaFiled(tableColumn);
+               initTableColumnJavaField(tableColumn);
                //判断主键
                if (tableColumn.getColumnKey().equals(PRI)) {
                    genTable.setIsPk(tableColumn.getColumnName());
                    genTable.setIsPkJavaType(tableColumn.getJavaType());
-                   genTable.setIsPkJavaFiled(tableColumn.getJavaField());
+                   genTable.setIsPkJavaField(tableColumn.getJavaField());
                }
            }
            genTable.setColumns(tableColumns);
@@ -2667,7 +2667,7 @@ get、set、toString：
            List<GenTableColumn> columns = genTable.getColumns();
            String isPk = genTable.getIsPk();
            String isPkJavaType = genTable.getIsPkJavaType();
-           String isPkJavaFiled = genTable.getIsPkJavaFiled();
+           String isPkJavaField = genTable.getIsPkJavaField();
            context.put("tableName", tableName);
            context.put("tableComment", tableComment);
            context.put("className", className);
@@ -2676,7 +2676,7 @@ get、set、toString：
            context.put("columns", columns);
            context.put("isPk", isPk);
            context.put("isPkJavaType", isPkJavaType);
-           context.put("isPkJavaFiled", isPkJavaFiled);
+           context.put("isPkJavaField", isPkJavaField);
            return context;
        }
    ```

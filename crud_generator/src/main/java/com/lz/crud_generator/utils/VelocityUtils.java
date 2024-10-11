@@ -91,7 +91,7 @@ public class VelocityUtils {
         List<GenTableColumn> columns = genTable.getColumns();
         String isPk = genTable.getIsPk();
         String isPkJavaType = genTable.getIsPkJavaType();
-        String isPkJavaFiled = genTable.getIsPkJavaFiled();
+        String isPkJavaField = genTable.getIsPkJavaField();
         context.put("tableName", tableName);
         context.put("tableComment", tableComment);
         context.put("className", className);
@@ -100,7 +100,7 @@ public class VelocityUtils {
         context.put("columns", columns);
         context.put("isPk", isPk);
         context.put("isPkJavaType", isPkJavaType);
-        context.put("isPkJavaFiled", isPkJavaFiled);
+        context.put("isPkJavaField", isPkJavaField);
         return context;
     }
 

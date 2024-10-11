@@ -18,7 +18,7 @@ import ${packageName}.service.I${className}Service;
 #end
 
 /**
- * ${functionName}Controller
+ * ${tableComment}Controller
  * 
  * @author ${author}
  * @date ${datetime}
@@ -31,7 +31,7 @@ public class ${className}Controller
     private I${className}Service ${className}Service;
 
     /**
-     * 查询${functionName}列表
+     * 查询${tableComment}列表
      */
     @GetMapping("/list")
     public List<${className}> list(${className} ${className})
@@ -42,7 +42,7 @@ public class ${className}Controller
 
 
     /**
-     * 获取${functionName}详细信息
+     * 获取${tableComment}详细信息
      */
     @GetMapping(value = "/{${pkColumn.javaField}}")
     public ${className} getInfo(@PathVariable("${pkColumn.javaField}") ${pkColumn.javaType} ${pkColumn.javaField})
@@ -51,7 +51,7 @@ public class ${className}Controller
     }
 
     /**
-     * 新增${functionName}
+     * 新增${tableComment}
      */
     @PostMapping
     public int add(@RequestBody ${className} ${className})
@@ -60,7 +60,7 @@ public class ${className}Controller
     }
 
     /**
-     * 修改${functionName}
+     * 修改${tableComment}
      */
     @PutMapping
     public int edit(@RequestBody ${className} ${className})
@@ -69,7 +69,7 @@ public class ${className}Controller
     }
 
     /**
-     * 删除${functionName}
+     * 删除${tableComment}
      */
 	@DeleteMapping("/{${pkColumn.javaField}s}")
     public int remove(@PathVariable ${pkColumn.javaType}[] ${pkColumn.javaField}s)

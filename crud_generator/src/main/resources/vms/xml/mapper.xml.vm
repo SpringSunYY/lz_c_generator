@@ -25,10 +25,10 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         </where>
     </select>
 
-    #set($isPkJavaFieldAttrName=${isPkJavaFiled.substring(0,1).toUpperCase()} + ${isPkJavaFiled.substring(1)})
+    #set($isPkJavaFieldAttrName=${isPkJavaField.substring(0,1).toUpperCase()} + ${isPkJavaField.substring(1)})
     <select id="select${className}By${isPkJavaFieldAttrName}" parameterType="${isPkJavaType}" resultMap="${className}Result">
         <include refid="select${className}Vo"/>
-        where ${isPk} = #{${isPkJavaFiled}}
+        where ${isPk} = #{${isPkJavaField}}
     </select>
         
     <insert id="insert${className}" parameterType="${className}">
@@ -52,17 +52,17 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="$column.javaField != null#if($column.javaType == 'String') and $column.javaField != ''#end">$column.columnName = #{$column.javaField},</if>
 #end
         </trim>
-        where ${isPk} = #{${isPkJavaFiled}}
+        where ${isPk} = #{${isPkJavaField}}
     </update>
 
     <delete id="delete${className}By${isPkJavaFieldAttrName}" parameterType="${isPkJavaType}">
-        delete from ${tableName} where ${isPk} = #{${isPkJavaFiled}}
+        delete from ${tableName} where ${isPk} = #{${isPkJavaField}}
     </delete>
 
     <delete id="delete${className}By${isPkJavaFieldAttrName}s" parameterType="String">
         delete from ${tableName} where ${isPk} in
-        <foreach item="${isPkJavaFiled}Item" collection="array" open="(" separator="," close=")">
-            ${isPkJavaFiled}Item
+        <foreach item="${isPkJavaField}Item" collection="array" open="(" separator="," close=")">
+            ${isPkJavaField}Item
         </foreach>
     </delete>
 

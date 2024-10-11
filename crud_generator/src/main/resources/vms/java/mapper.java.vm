@@ -7,85 +7,58 @@ import ${packageName}.domain.${subclassName};
 #end
 
 /**
- * ${functionName}Mapper接口
+ * ${tableComment}Mapper接口
  * 
  * @author ${author}
- * @date ${datetime}
  */
 public interface ${className}Mapper
 {
     /**
-     * 查询${functionName}
+     * 查询${tableComment}
      * 
-     * @param ${pkColumn.javaField} ${functionName}主键
-     * @return ${functionName}
+     * @param ${isPkJavaField} ${tableComment}主键
+     * @return ${tableComment}
      */
-    public ${className} select${className}By${pkColumn.capJavaField}(${pkColumn.javaType} ${pkColumn.javaField});
+    #set($isPkJavaFieldAttrName=${isPkJavaField.substring(0,1).toUpperCase()} + ${isPkJavaField.substring(1)})
+    public ${className} select${className}By${isPkJavaFieldAttrName}(${isPkJavaType} ${isPkJavaField});
 
     /**
-     * 查询${functionName}列表
+     * 查询${tableComment}列表
      * 
-     * @param ${className} ${functionName}
-     * @return ${functionName}集合
+     * @param ${className} ${tableComment}
+     * @return ${tableComment}集合
      */
     public List<${className}> select${className}List(${className} ${className});
 
     /**
-     * 新增${functionName}
+     * 新增${tableComment}
      * 
-     * @param ${className} ${functionName}
-     * @return 结果
+     * @param ${className} ${tableComment}
+     * @return int
      */
     public int insert${className}(${className} ${className});
 
     /**
-     * 修改${functionName}
+     * 修改${tableComment}
      * 
-     * @param ${className} ${functionName}
-     * @return 结果
+     * @param ${className} ${tableComment}
+     * @return int
      */
     public int update${className}(${className} ${className});
 
     /**
-     * 删除${functionName}
+     * 删除${tableComment}
      * 
-     * @param ${pkColumn.javaField} ${functionName}主键
-     * @return 结果
+     * @param ${isPkJavaField} ${tableComment}主键
+     * @return int
      */
-    public int delete${className}By${pkColumn.capJavaField}(${pkColumn.javaType} ${pkColumn.javaField});
+    public int delete${className}By${isPkJavaFieldAttrName}(${isPkJavaType} ${isPkJavaField});
 
     /**
-     * 批量删除${functionName}
+     * 批量删除${tableComment}
      * 
-     * @param ${pkColumn.javaField}s 需要删除的数据主键集合
-     * @return 结果
+     * @param ${isPkJavaField}s 需要删除的数据主键集合
+     * @return int
      */
-    public int delete${className}By${pkColumn.capJavaField}s(${pkColumn.javaType}[] ${pkColumn.javaField}s);
-#if($table.sub)
-
-    /**
-     * 批量删除${subTable.functionName}
-     * 
-     * @param ${pkColumn.javaField}s 需要删除的数据主键集合
-     * @return 结果
-     */
-    public int delete${subclassName}By${subTableFkclassName}s(${pkColumn.javaType}[] ${pkColumn.javaField}s);
-    
-    /**
-     * 批量新增${subTable.functionName}
-     * 
-     * @param ${subclassName}List ${subTable.functionName}列表
-     * @return 结果
-     */
-    public int batch${subclassName}(List<${subclassName}> ${subclassName}List);
-    
-
-    /**
-     * 通过${functionName}主键删除${subTable.functionName}信息
-     * 
-     * @param ${pkColumn.javaField} ${functionName}ID
-     * @return 结果
-     */
-    public int delete${subclassName}By${subTableFkclassName}(${pkColumn.javaType} ${pkColumn.javaField});
-#end
+    public int delete${className}By${isPkJavaFieldAttrName}s(${isPkJavaType}[] ${isPkJavaField}s);
 }

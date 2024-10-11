@@ -18,7 +18,7 @@ public class GenTable {
     private String author;                // 作者
     private String isPk;                  // 主键
     private String isPkJavaType;              // 主键类型
-    private String isPkJavaFiled;         // 主键java字段
+    private String isPkJavaField;         // 主键java字段
     private List<GenTableColumn> columns; // 列表信息
     private static final long serialVersionUID = 1L;
 
@@ -78,12 +78,12 @@ public class GenTable {
         this.isPkJavaType = isPkJavaType;
     }
 
-    public String getIsPkJavaFiled() {
-        return isPkJavaFiled;
+    public String getIsPkJavaField() {
+        return isPkJavaField;
     }
 
-    public void setIsPkJavaFiled(String isPkJavaFiled) {
-        this.isPkJavaFiled = isPkJavaFiled;
+    public void setIsPkJavaField(String isPkJavaFiled) {
+        this.isPkJavaField = isPkJavaFiled;
     }
 
     public List<GenTableColumn> getColumns() {
@@ -104,7 +104,7 @@ public class GenTable {
                 ", author='" + author + '\'' +
                 ", isPk='" + isPk + '\'' +
                 ", isPkJavaType='" + isPkJavaType + '\'' +
-                ", isPkJavaFiled='" + isPkJavaFiled + '\'' +
+                ", isPkJavaFiled='" + isPkJavaField + '\'' +
                 ", columns=" + columns +
                 '}';
     }

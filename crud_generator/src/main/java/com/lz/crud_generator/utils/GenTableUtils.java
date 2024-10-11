@@ -27,12 +27,12 @@ public class GenTableUtils {
             //初始化Java类型
             initTableColumnJavaType(tableColumn);
             //初始化Java字段
-            initTableColumnJavaFiled(tableColumn);
+            initTableColumnJavaField(tableColumn);
             //判断主键
             if (tableColumn.getColumnKey().equals(PRI)) {
                 genTable.setIsPk(tableColumn.getColumnName());
                 genTable.setIsPkJavaType(tableColumn.getJavaType());
-                genTable.setIsPkJavaFiled(tableColumn.getJavaField());
+                genTable.setIsPkJavaField(tableColumn.getJavaField());
             }
         }
         genTable.setColumns(tableColumns);
@@ -42,7 +42,7 @@ public class GenTableUtils {
      * 初始化Java字段
      * @param tableColumn
      */
-    private static void initTableColumnJavaFiled(GenTableColumn tableColumn) {
+    private static void initTableColumnJavaField(GenTableColumn tableColumn) {
         tableColumn.setJavaField(MyStrUtils.toCamelCase(tableColumn.getColumnName()));
     }
 
