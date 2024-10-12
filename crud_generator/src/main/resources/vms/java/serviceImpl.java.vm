@@ -11,10 +11,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import ${packageName}.mapper.${className}Mapper;
-import ${packageName}.domain.${className};
-import
+import ${packageName}.model.domain.${className};
 
-import javax.xml.crypto.Data; ${packageName}.service.I${className}Service;
+import javax.xml.crypto.Data;
+import {packageName}.service.I${className}Service;
 
 /**
  * ${tableComment}Service业务层处理
@@ -24,66 +24,66 @@ import javax.xml.crypto.Data; ${packageName}.service.I${className}Service;
 @Service
 public class ${className}ServiceImpl implements I${className}Service
 {
+    #set($classNameLower=${className.substring(0,1).toLowerCase()} + ${className.substring(1)})
     @Autowired
-    private ${className}Mapper ${className}Mapper;
+    private ${className}Mapper ${classNameLower}Mapper;
 
     /**
      * 查询${tableComment}
-     * 
+     *
      * @param ${isPkJavaField} ${tableComment}主键
      * @return ${className}
      */
-    #set($isPkJavaFieldAttrName=${isPkJavaField.substring(0,1).toUpperCase()} + ${isPkJavaField.substring(1)})
+        #set($isPkJavaFieldAttrName=${isPkJavaField.substring(0,1).toUpperCase()} + ${isPkJavaField.substring(1)})
     @Override
     public ${className} select${className}By${isPkJavaFieldAttrName}(${isPkJavaType} ${isPkJavaField})
     {
-        return ${className}Mapper.select${className}By${isPkJavaFieldAttrName}(${isPkJavaField});
+        return ${classNameLower}Mapper.select${className}By${isPkJavaFieldAttrName}(${isPkJavaField});
     }
-
     /**
      * 查询${tableComment}列表
      * 
-     * @param ${className} ${tableComment}
+     * @param ${classNameLower} ${tableComment}
      * @return List<${className}>
      */
     @Override
-    public List<${className}> select${className}List(${className} ${className})
+    public List<${className}> select${className}List(${className} ${classNameLower})
     {
-        return ${className}Mapper.select${className}List(${className});
+        return ${classNameLower}Mapper.select${className}List(${classNameLower});
     }
 
     /**
      * 新增${tableComment}
      * 
-     * @param ${className} ${tableComment}
+     * @param ${classNameLower} ${tableComment}
      * @return 结果
      */
     @Override
-    public int insert${className}(${className} ${className})
+    public int insert${className}(${className} ${classNameLower})
     {
 #foreach ($column in $columns)
 #if($column.javaField == 'createTime')
-        ${className}.setCreateTime(new Data());
+        ${classNameLower}.setCreateTime(new Date());
 #end
 #end
-        return ${className}Mapper.insert${className}(${className});
+        return ${classNameLower}Mapper.insert${className}(${classNameLower});
     }
 
     /**
      * 修改${tableComment}
      * 
-     * @param ${className} ${tableComment}
+     * @param ${classNameLower} ${tableComment}
      * @return int
      */
     @Override
-    public int update${className}(${className} ${className})
+    public int update${className}(${className} ${classNameLower})
     {
 #foreach ($column in $columns)
 #if($column.javaField == 'updateTime')
-        ${className}.setUpdateTime(new Data());
+        ${classNameLower}.setUpdateTime(new Date());
 #end
 #end
-        return ${className}Mapper.update${className}(${className});
+        return ${classNameLower}Mapper.update${className}(${classNameLower});
     }
 
     /**
@@ -95,7 +95,7 @@ public class ${className}ServiceImpl implements I${className}Service
     @Override
     public int delete${className}By${isPkJavaFieldAttrName}s(${isPkJavaType}[] ${isPkJavaField}s)
     {
-        return ${className}Mapper.delete${className}By${isPkJavaFieldAttrName}s(${isPkJavaField}s);
+        return ${classNameLower}Mapper.delete${className}By${isPkJavaFieldAttrName}s(${isPkJavaField}s);
     }
 
     /**
@@ -105,7 +105,7 @@ public class ${className}ServiceImpl implements I${className}Service
      * @return int
      */
     @Override
-    public int delete${className}By${isPkJavaFieldAttrName}(${isPkJavaType} ${isPkJavaField})
-        return ${className}Mapper.delete${className}By${isPkJavaFieldAttrName}(${isPkJavaField});
+    public int delete${className}By${isPkJavaFieldAttrName}(${isPkJavaType} ${isPkJavaField}){
+        return ${classNameLower}Mapper.delete${className}By${isPkJavaFieldAttrName}(${isPkJavaField});
     }
 }

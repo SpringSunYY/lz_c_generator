@@ -1,13 +1,12 @@
 package ${packageName}.service;
 
 import java.util.List;
-import ${packageName}.domain.${className};
+import ${packageName}.model.domain.${className};
 
 /**
  * ${tableComment}Service接口
  * 
  * @author ${author}
- * @date ${datetime}
  */
 public interface I${className}Service
 {
@@ -20,29 +19,30 @@ public interface I${className}Service
     #set($isPkJavaFieldAttrName=${isPkJavaField.substring(0,1).toUpperCase()} + ${isPkJavaField.substring(1)})
     public ${className} select${className}By${isPkJavaFieldAttrName}(${isPkJavaType} ${isPkJavaField});
 
+    #set($classNameLower=${className.substring(0,1).toLowerCase()} + ${className.substring(1)})
     /**
      * 查询${tableComment}列表
-     * 
-     * @param ${className} ${tableComment}
+     *
+     * @param ${classNameLower} ${tableComment}
      * @return ${tableComment}集合
      */
-    public List<${className}> select${className}List(${className} ${className});
+    public List<${className}> select${className}List(${className} ${classNameLower});
 
     /**
      * 新增${tableComment}
      * 
-     * @param ${className} ${tableComment}
+     * @param ${classNameLower} ${tableComment}
      * @return int
      */
-    public int insert${className}(${className} ${className});
+    public int insert${className}(${className} ${classNameLower});
 
     /**
      * 修改${tableComment}
      * 
-     * @param ${className} ${tableComment}
+     * @param ${classNameLower} ${tableComment}
      * @return int
      */
-    public int update${className}(${className} ${className});
+    public int update${className}(${className} ${classNameLower});
 
     /**
      * 批量删除${tableComment}
@@ -58,5 +58,5 @@ public interface I${className}Service
      * @param ${isPkJavaField} ${tableComment}主键
      * @return int
      */
-    public int delete${className}By${isPkJavaFieldAttrName}(${isPkJavaField} ${isPkJavaField});
+    public int delete${className}By${isPkJavaFieldAttrName}(${isPkJavaType} ${isPkJavaField});
 }

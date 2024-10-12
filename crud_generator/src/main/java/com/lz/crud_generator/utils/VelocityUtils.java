@@ -38,9 +38,10 @@ public class VelocityUtils {
      */
     private static final String[] TEMPLATE_TYPE = {
             "vms/java/domain.java.vm",
-            "vms/java/mapper.java.vm",
+            "vms/java/controller.java.vm",
             "vms/java/service.java.vm",
             "vms/java/serviceImpl.java.vm",
+            "vms/java/mapper.java.vm",
             "vms/xml/mapper.xml.vm",
     };
 
@@ -167,7 +168,7 @@ public class VelocityUtils {
         String mybatisPath = MYBATIS_PATH + "/";
 
         if (templateType.contains("domain.java.vm")) {
-            fileName = MyStrUtils.format("{}/domain/{}.java", javaPath, className);
+            fileName = MyStrUtils.format("{}/model/domain/{}.java", javaPath, className);
         } else if (templateType.contains("mapper.java.vm")) {
             fileName = MyStrUtils.format("{}/mapper/{}Mapper.java", javaPath, className);
         } else if (templateType.contains("service.java.vm")) {

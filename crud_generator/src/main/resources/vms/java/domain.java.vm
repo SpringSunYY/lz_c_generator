@@ -1,7 +1,13 @@
 package ${packageName};
 
-import java.util.List;
-
+#foreach ($column in $columns)
+    #if($column.javaType == 'Date')
+import java.util.Date;
+    #end
+    #if($column.javaType == 'BigDecimal')
+import java.math.BigDecimal;
+    #end
+#end
 /**
  * @Author: ${author}
  * @Description:
@@ -34,9 +40,9 @@ public class ${className} {
 
     @Override
     public String toString() {
-        return "${className}{" +
+        return "${className}{\n" +
         #foreach($column in $columns)
-                "${column.javaField}='" + ${column.javaField} + '\n\'' +
+                "${column.javaField}='" + ${column.javaField} + '\n' +
         #end
                 '}';
     }

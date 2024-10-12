@@ -1,16 +1,15 @@
 package ${packageName}.mapper;
 
 import java.util.List;
-import ${packageName}.domain.${className};
-#if($table.sub)
-import ${packageName}.domain.${subclassName};
-#end
+import ${packageName}.model.domain.${className};
 
+import org.apache.ibatis.annotations.Mapper;
 /**
  * ${tableComment}Mapper接口
  * 
  * @author ${author}
  */
+@Mapper
 public interface ${className}Mapper
 {
     /**
@@ -22,29 +21,30 @@ public interface ${className}Mapper
     #set($isPkJavaFieldAttrName=${isPkJavaField.substring(0,1).toUpperCase()} + ${isPkJavaField.substring(1)})
     public ${className} select${className}By${isPkJavaFieldAttrName}(${isPkJavaType} ${isPkJavaField});
 
+    #set($classNameLower=${className.substring(0,1).toLowerCase()} + ${className.substring(1)})
     /**
      * 查询${tableComment}列表
-     * 
-     * @param ${className} ${tableComment}
+     *
+     * @param ${classNameLower} ${tableComment}
      * @return ${tableComment}集合
      */
-    public List<${className}> select${className}List(${className} ${className});
+    public List<${className}> select${className}List(${className} ${classNameLower});
 
     /**
      * 新增${tableComment}
      * 
-     * @param ${className} ${tableComment}
+     * @param ${classNameLower} ${tableComment}
      * @return int
      */
-    public int insert${className}(${className} ${className});
+    public int insert${className}(${className} ${classNameLower});
 
     /**
      * 修改${tableComment}
      * 
-     * @param ${className} ${tableComment}
+     * @param ${classNameLower} ${tableComment}
      * @return int
      */
-    public int update${className}(${className} ${className});
+    public int update${className}(${className} ${classNameLower});
 
     /**
      * 删除${tableComment}
