@@ -2683,3 +2683,419 @@ get、set、toString：
 
    ![image-20241010223632570](./assets/image-20241010223632570.png)
 
+#### 6.模版
+
+目录格式![image-20241013222549009](./assets/image-20241013222549009.png)
+
+**mapper.xml.vm**
+
+```xml
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="${packageName}.mapper.${className}Mapper">
+    
+    <resultMap type="${className}" id="${className}Result">
+#foreach ($column in $columns)
+        <result property="${column.javaField}"    column="${column.columnName}"    />
+#end
+    </resultMap>
+
+    <sql id="select${className}Vo">
+        select#foreach($column in $columns) $column.columnName#if($foreach.count != $columns.size()),#end#end from ${tableName}
+    </sql>
+
+    <select id="select${className}List" parameterType="${className}" resultMap="${className}Result">
+        <include refid="select${className}Vo"/>
+        <where>
+            #foreach($column in $columns)
+            <if test="$column.javaField != null #if($column.javaType == 'String' ) and $column.javaField != ''#end">
+                and $column.columnName = #{$column.javaField}
+            </if>
+            #end
+        </where>
+    </select>
+
+    #set($isPkJavaFieldAttrName=${isPkJavaField.substring(0,1).toUpperCase()} + ${isPkJavaField.substring(1)})
+    <select id="select${className}By${isPkJavaFieldAttrName}" parameterType="${isPkJavaType}" resultMap="${className}Result">
+        <include refid="select${className}Vo"/>
+        where ${isPk} = #{${isPkJavaField}}
+    </select>
+        
+    <insert id="insert${className}" parameterType="${className}">
+        insert into ${tableName}
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+#foreach($column in $columns)
+            <if test="$column.javaField != null#if($column.javaType == 'String' ) and $column.javaField != ''#end">$column.columnName,</if>
+#end
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+#foreach($column in $columns)
+            <if test="$column.javaField != null#if($column.javaType == 'String' ) and $column.javaField != ''#end">#{$column.javaField},</if>
+#end
+         </trim>
+    </insert>
+
+    <update id="update${className}" parameterType="${className}">
+        update ${tableName}
+        <trim prefix="SET" suffixOverrides=",">
+#foreach($column in $columns)
+            <if test="$column.javaField != null#if($column.javaType == 'String') and $column.javaField != ''#end">$column.columnName = #{$column.javaField},</if>
+#end
+        </trim>
+        where ${isPk} = #{${isPkJavaField}}
+    </update>
+
+    <delete id="delete${className}By${isPkJavaFieldAttrName}" parameterType="${isPkJavaType}">
+        delete from ${tableName} where ${isPk} = #{${isPkJavaField}}
+    </delete>
+
+    <delete id="delete${className}By${isPkJavaFieldAttrName}s" parameterType="String">
+        delete from ${tableName} where ${isPk} in
+        <foreach item="${isPkJavaField}Item" collection="array" open="(" separator="," close=")">
+            ${isPkJavaField}Item
+        </foreach>
+    </delete>
+
+</mapper>
+```
+
+**mapper.java.vm**
+
+```java
+package ${packageName}.mapper;
+
+import java.util.List;
+import ${packageName}.model.domain.${className};
+
+import org.apache.ibatis.annotations.Mapper;
+/**
+ * ${tableComment}Mapper接口
+ * 
+ * @author ${author}
+ */
+@Mapper
+public interface ${className}Mapper
+{
+    /**
+     * 查询${tableComment}
+     * 
+     * @param ${isPkJavaField} ${tableComment}主键
+     * @return ${tableComment}
+     */
+    #set($isPkJavaFieldAttrName=${isPkJavaField.substring(0,1).toUpperCase()} + ${isPkJavaField.substring(1)})
+    public ${className} select${className}By${isPkJavaFieldAttrName}(${isPkJavaType} ${isPkJavaField});
+
+    #set($classNameLower=${className.substring(0,1).toLowerCase()} + ${className.substring(1)})
+    /**
+     * 查询${tableComment}列表
+     *
+     * @param ${classNameLower} ${tableComment}
+     * @return ${tableComment}集合
+     */
+    public List<${className}> select${className}List(${className} ${classNameLower});
+
+    /**
+     * 新增${tableComment}
+     * 
+     * @param ${classNameLower} ${tableComment}
+     * @return int
+     */
+    public int insert${className}(${className} ${classNameLower});
+
+    /**
+     * 修改${tableComment}
+     * 
+     * @param ${classNameLower} ${tableComment}
+     * @return int
+     */
+    public int update${className}(${className} ${classNameLower});
+
+    /**
+     * 删除${tableComment}
+     * 
+     * @param ${isPkJavaField} ${tableComment}主键
+     * @return int
+     */
+    public int delete${className}By${isPkJavaFieldAttrName}(${isPkJavaType} ${isPkJavaField});
+
+    /**
+     * 批量删除${tableComment}
+     * 
+     * @param ${isPkJavaField}s 需要删除的数据主键集合
+     * @return int
+     */
+    public int delete${className}By${isPkJavaFieldAttrName}s(${isPkJavaType}[] ${isPkJavaField}s);
+}
+
+```
+
+**serviceImpl.java.vm**
+
+```java
+package ${packageName}.service.impl;
+
+import java.util.List;
+#foreach ($column in $columns)
+#if($column.javaField == 'createTime' || $column.javaField == 'updateTime')
+import java.util.Date;
+#break
+#end
+#end
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import ${packageName}.mapper.${className}Mapper;
+import ${packageName}.model.domain.${className};
+
+import javax.xml.crypto.Data;
+import {packageName}.service.I${className}Service;
+
+/**
+ * ${tableComment}Service业务层处理
+ * 
+ * @author ${author}
+ */
+@Service
+public class ${className}ServiceImpl implements I${className}Service
+{
+    #set($classNameLower=${className.substring(0,1).toLowerCase()} + ${className.substring(1)})
+    @Autowired
+    private ${className}Mapper ${classNameLower}Mapper;
+
+    /**
+     * 查询${tableComment}
+     *
+     * @param ${isPkJavaField} ${tableComment}主键
+     * @return ${className}
+     */
+        #set($isPkJavaFieldAttrName=${isPkJavaField.substring(0,1).toUpperCase()} + ${isPkJavaField.substring(1)})
+    @Override
+    public ${className} select${className}By${isPkJavaFieldAttrName}(${isPkJavaType} ${isPkJavaField})
+    {
+        return ${classNameLower}Mapper.select${className}By${isPkJavaFieldAttrName}(${isPkJavaField});
+    }
+    /**
+     * 查询${tableComment}列表
+     * 
+     * @param ${classNameLower} ${tableComment}
+     * @return List<${className}>
+     */
+    @Override
+    public List<${className}> select${className}List(${className} ${classNameLower})
+    {
+        return ${classNameLower}Mapper.select${className}List(${classNameLower});
+    }
+
+    /**
+     * 新增${tableComment}
+     * 
+     * @param ${classNameLower} ${tableComment}
+     * @return 结果
+     */
+    @Override
+    public int insert${className}(${className} ${classNameLower})
+    {
+#foreach ($column in $columns)
+#if($column.javaField == 'createTime')
+        ${classNameLower}.setCreateTime(new Date());
+#end
+#end
+        return ${classNameLower}Mapper.insert${className}(${classNameLower});
+    }
+
+    /**
+     * 修改${tableComment}
+     * 
+     * @param ${classNameLower} ${tableComment}
+     * @return int
+     */
+    @Override
+    public int update${className}(${className} ${classNameLower})
+    {
+#foreach ($column in $columns)
+#if($column.javaField == 'updateTime')
+        ${classNameLower}.setUpdateTime(new Date());
+#end
+#end
+        return ${classNameLower}Mapper.update${className}(${classNameLower});
+    }
+
+    /**
+     * 批量删除${tableComment}
+     * 
+     * @param ${isPkJavaField}s 需要删除的${tableComment}主键
+     * @return int
+     */
+    @Override
+    public int delete${className}By${isPkJavaFieldAttrName}s(${isPkJavaType}[] ${isPkJavaField}s)
+    {
+        return ${classNameLower}Mapper.delete${className}By${isPkJavaFieldAttrName}s(${isPkJavaField}s);
+    }
+
+    /**
+     * 删除${tableComment}信息
+     * 
+     * @param ${isPkJavaField} ${tableComment}主键
+     * @return int
+     */
+    @Override
+    public int delete${className}By${isPkJavaFieldAttrName}(${isPkJavaType} ${isPkJavaField}){
+        return ${classNameLower}Mapper.delete${className}By${isPkJavaFieldAttrName}(${isPkJavaField});
+    }
+}
+
+```
+
+**service.java.vm**
+
+```java
+package ${packageName}.service;
+
+import java.util.List;
+import ${packageName}.model.domain.${className};
+
+/**
+ * ${tableComment}Service接口
+ * 
+ * @author ${author}
+ */
+public interface I${className}Service
+{
+    /**
+     * 查询${tableComment}
+     * 
+     * @param ${isPkJavaField} ${tableComment}主键
+     * @return ${className}
+     */
+    #set($isPkJavaFieldAttrName=${isPkJavaField.substring(0,1).toUpperCase()} + ${isPkJavaField.substring(1)})
+    public ${className} select${className}By${isPkJavaFieldAttrName}(${isPkJavaType} ${isPkJavaField});
+
+    #set($classNameLower=${className.substring(0,1).toLowerCase()} + ${className.substring(1)})
+    /**
+     * 查询${tableComment}列表
+     *
+     * @param ${classNameLower} ${tableComment}
+     * @return ${tableComment}集合
+     */
+    public List<${className}> select${className}List(${className} ${classNameLower});
+
+    /**
+     * 新增${tableComment}
+     * 
+     * @param ${classNameLower} ${tableComment}
+     * @return int
+     */
+    public int insert${className}(${className} ${classNameLower});
+
+    /**
+     * 修改${tableComment}
+     * 
+     * @param ${classNameLower} ${tableComment}
+     * @return int
+     */
+    public int update${className}(${className} ${classNameLower});
+
+    /**
+     * 批量删除${tableComment}
+     * 
+     * @param ${isPkJavaField}s 需要删除的${tableComment}主键集合
+     * @return int
+     */
+    public int delete${className}By${isPkJavaFieldAttrName}s(${isPkJavaType}[] ${isPkJavaField}s);
+
+    /**
+     * 删除${tableComment}信息
+     * 
+     * @param ${isPkJavaField} ${tableComment}主键
+     * @return int
+     */
+    public int delete${className}By${isPkJavaFieldAttrName}(${isPkJavaType} ${isPkJavaField});
+}
+
+```
+
+**controler.java.vm**
+
+```
+package ${packageName}.controller;
+
+import java.util.List;
+import javax.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import ${packageName}.model.domain.${className};
+import ${packageName}.service.I${className}Service;
+
+/**
+ * ${tableComment}Controller
+ * 
+ * @author ${author}
+ */
+@RestController
+@RequestMapping("/${tableName}")
+public class ${className}Controller
+{
+    #set($classNameLower=${className.substring(0,1).toLowerCase()} + ${className.substring(1)})
+    @Autowired
+    private I${className}Service ${classNameLower}Service;
+
+    /**
+     * 查询${tableComment}列表
+     */
+    @GetMapping("/list")
+    public List<${className}> list(${className} ${classNameLower})
+    {
+        return ${classNameLower}Service.select${className}List(${classNameLower});
+    }
+
+
+
+    /**
+     * 获取${tableComment}详细信息
+     */
+     #set($isPkJavaFieldAttrName=${isPkJavaField.substring(0,1).toUpperCase()} + ${isPkJavaField.substring(1)})
+    @GetMapping(value = "/{${isPkJavaField}}")
+    public ${className} getInfo(@PathVariable("${isPkJavaField}") ${isPkJavaType} ${isPkJavaField})
+    {
+        return ${classNameLower}Service.select${className}By${isPkJavaFieldAttrName}(${isPkJavaField});
+    }
+
+    /**
+     * 新增${tableComment}
+     */
+    @PostMapping
+    public int add(@RequestBody ${className} ${classNameLower})
+    {
+        return ${classNameLower}Service.insert${className}(${classNameLower});
+    }
+
+    /**
+     * 修改${tableComment}
+     */
+    @PutMapping
+    public int edit(@RequestBody ${className} ${classNameLower})
+    {
+        return ${classNameLower}Service.update${className}(${classNameLower});
+    }
+
+    /**
+     * 删除${tableComment}
+     */
+	@DeleteMapping("/{${isPkJavaField}s}")
+    public int remove(@PathVariable ${isPkJavaType}[] ${isPkJavaField}s)
+    {
+        return ${classNameLower}Service.delete${className}By${isPkJavaFieldAttrName}s(${isPkJavaField}s);
+    }
+}
+
+```
+
