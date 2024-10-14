@@ -1,6 +1,6 @@
 package ${packageName}.controller;
 
-import java.util.List;
+import com.lz.crud_generator.common.RestResponse;
 import javax.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -31,9 +31,9 @@ public class ${className}Controller
      * 查询${tableComment}列表
      */
     @GetMapping("/list")
-    public List<${className}> list(${className} ${classNameLower})
+    public RestResponse list(${className} ${classNameLower})
     {
-        return ${classNameLower}Service.select${className}List(${classNameLower});
+        return RestResponse.success(${classNameLower}Service.select${className}List(${classNameLower}));
     }
 
 
@@ -43,35 +43,35 @@ public class ${className}Controller
      */
      #set($isPkJavaFieldAttrName=${isPkJavaField.substring(0,1).toUpperCase()} + ${isPkJavaField.substring(1)})
     @GetMapping(value = "/{${isPkJavaField}}")
-    public ${className} getInfo(@PathVariable("${isPkJavaField}") ${isPkJavaType} ${isPkJavaField})
+    public RestResponse getInfo(@PathVariable("${isPkJavaField}") ${isPkJavaType} ${isPkJavaField})
     {
-        return ${classNameLower}Service.select${className}By${isPkJavaFieldAttrName}(${isPkJavaField});
+        return RestResponse.success(${classNameLower}Service.select${className}By${isPkJavaFieldAttrName}(${isPkJavaField}));
     }
 
     /**
      * 新增${tableComment}
      */
     @PostMapping
-    public int add(@RequestBody ${className} ${classNameLower})
+    public RestResponse add(@RequestBody ${className} ${classNameLower})
     {
-        return ${classNameLower}Service.insert${className}(${classNameLower});
+        return RestResponse.success("新增成功",${classNameLower}Service.insert${className}(${classNameLower}));
     }
 
     /**
      * 修改${tableComment}
      */
     @PutMapping
-    public int edit(@RequestBody ${className} ${classNameLower})
+    public RestResponse edit(@RequestBody ${className} ${classNameLower})
     {
-        return ${classNameLower}Service.update${className}(${classNameLower});
+        return RestResponse.success("修改成功",${classNameLower}Service.update${className}(${classNameLower}));
     }
 
     /**
      * 删除${tableComment}
      */
 	@DeleteMapping("/{${isPkJavaField}s}")
-    public int remove(@PathVariable ${isPkJavaType}[] ${isPkJavaField}s)
+    public RestResponse remove(@PathVariable ${isPkJavaType}[] ${isPkJavaField}s)
     {
-        return ${classNameLower}Service.delete${className}By${isPkJavaFieldAttrName}s(${isPkJavaField}s);
+        return RestResponse.success("删除成功",${classNameLower}Service.delete${className}By${isPkJavaFieldAttrName}s(${isPkJavaField}s));
     }
 }

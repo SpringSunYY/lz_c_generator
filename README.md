@@ -3018,7 +3018,7 @@ public interface I${className}Service
 
 **controler.java.vm**
 
-```
+```java
 package ${packageName}.controller;
 
 import java.util.List;
@@ -3099,3 +3099,492 @@ public class ${className}Controller
 
 ```
 
+#### 7.测试
+
+**新增**：post请求：
+
+```js
+localhost:8080/book_info
+```
+
+```json
+{
+    "bookName": "活着",
+    "bookAuthor": "余华",
+    "bookTotal": 10,
+    "bookPrice": 10.1,
+    "bookImage": null,
+    "bookShelfId": 1,
+    "createBy": "YY",
+    "isDelete": 0,
+    "createTime": "2024-10-12T03:06:41.000+00:00",
+    "updateTime": "2024-10-12T03:06:43.000+00:00"
+}
+```
+
+**修改**：put请求：
+
+```js
+localhost:8080/book_info
+```
+
+```json
+{
+    "bookId":2,	//实际id
+    "bookName": "活着",
+    "bookAuthor": "余华",
+    "bookTotal": 1011,
+    "bookPrice": 10.1,
+    "bookImage": null,
+    "bookShelfId": 1,
+    "createBy": "YY",
+    "isDelete": 0,
+    "createTime": "2024-10-12T03:06:41.000+00:00",
+    "updateTime": "2024-10-12T03:06:43.000+00:00"
+}
+```
+
+**详细信息**：get请求：
+
+```js
+localhost:8080/book_info/1
+```
+
+**列表**：get请求：
+
+```
+localhost:8080/book_info/list?bookName=活着
+```
+
+**删除**：delete请求：
+
+自行测试。
+
+### 五、完善项目
+
+#### 1.controller统一返回
+
+​		日常`JAVA Web`项目开发过程中，一般都是基于`HTTP+REST`风格，`Controller`接口返回`JSON`格式数据到前端，前端获取`JSON`后展示在前端，为了项目的返回数据格式统一，所以需要统一返回数据工具类封装。而这些东西也不要自己背下来，能看懂就行了，网上也有很多，所以直接使用提供的这个就行：
+
+```java
+import java.io.Serializable;
+
+/**
+ * REST接口统一返回数据工具类封装RestResponse
+ *
+ * @param <T>
+ */
+public class RestResponse<T> implements Serializable {
+
+    private static final long serialVersionUID = 3728877563912075885L;
+
+    private int code;
+    private String msg;
+    private T data;
+
+    public RestResponse() {
+
+    }
+
+    public RestResponse(int code, String message, T data) {
+        this.code = code;
+        this.setMsg(message);
+        this.data = data;
+    }
+
+    public RestResponse(int code, T data) {
+        this.code = code;
+        this.data = data;
+    }
+
+    public RestResponse(int code, String message) {
+        this.code = code;
+        this.setMsg(message);
+    }
+
+    /**
+     * 成功时-返回data
+     *
+     * @param <T>
+     * @return
+     */
+    public static <T> RestResponse<T> success(T data) {
+        return new RestResponse<T>(200, null, data);
+    }
+
+    /**
+     * 成功-不返回data
+     *
+     * @param <T>
+     * @return
+     */
+    public static <T> RestResponse<T> success(String msg) {
+        return new RestResponse<T>(200, msg);
+    }
+
+    /**
+     * 成功-返回data+msg
+     *
+     * @param <T>
+     * @return
+     */
+    public static <T> RestResponse<T> success(String msg, T data) {
+        return new RestResponse<T>(200, msg, data);
+    }
+
+    /**
+     * 失败
+     *
+     * @param <T>
+     * @return
+     */
+    public static <T> RestResponse<T> fail(String msg) {
+        return new RestResponse<T>(500, msg, null);
+    }
+
+    /**
+     * 失败-code
+     *
+     * @param <T>
+     * @return
+     */
+    public static <T> RestResponse<T> fail(int code, String msg) {
+        return new RestResponse<T>(code, msg, null);
+    }
+
+
+    public int getCode() {
+        return code;
+    }
+
+    public String getMsg() {
+        return msg;
+    }
+
+
+    public T getData() {
+        return data;
+    }
+
+    public void setCode(int code) {
+        this.code = code;
+    }
+
+    public void setMsg(String msg) {
+        this.msg = msg;
+    }
+
+    public void setData(T data) {
+        this.data = data;
+    }
+
+    @Override
+    public String toString() {
+        return "RestResponse{" + "code=" + code + ", msg='" + msg + '\'' + ", data=" + data + '}';
+    }
+}
+
+```
+
+修改完成后，重新修改controller.java.vm的模版
+
+```java
+package ${packageName}.controller;
+
+import com.lz.crud_generator.common.RestResponse;
+import javax.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import ${packageName}.model.domain.${className};
+import ${packageName}.service.I${className}Service;
+
+/**
+ * ${tableComment}Controller
+ * 
+ * @author ${author}
+ */
+@RestController
+@RequestMapping("/${tableName}")
+public class ${className}Controller
+{
+    #set($classNameLower=${className.substring(0,1).toLowerCase()} + ${className.substring(1)})
+    @Autowired
+    private I${className}Service ${classNameLower}Service;
+
+    /**
+     * 查询${tableComment}列表
+     */
+    @GetMapping("/list")
+    public RestResponse list(${className} ${classNameLower})
+    {
+        return RestResponse.success(${classNameLower}Service.select${className}List(${classNameLower}));
+    }
+
+
+
+    /**
+     * 获取${tableComment}详细信息
+     */
+     #set($isPkJavaFieldAttrName=${isPkJavaField.substring(0,1).toUpperCase()} + ${isPkJavaField.substring(1)})
+    @GetMapping(value = "/{${isPkJavaField}}")
+    public RestResponse getInfo(@PathVariable("${isPkJavaField}") ${isPkJavaType} ${isPkJavaField})
+    {
+        return RestResponse.success(${classNameLower}Service.select${className}By${isPkJavaFieldAttrName}(${isPkJavaField}));
+    }
+
+    /**
+     * 新增${tableComment}
+     */
+    @PostMapping
+    public RestResponse add(@RequestBody ${className} ${classNameLower})
+    {
+        return RestResponse.success("新增成功",${classNameLower}Service.insert${className}(${classNameLower}));
+    }
+
+    /**
+     * 修改${tableComment}
+     */
+    @PutMapping
+    public RestResponse edit(@RequestBody ${className} ${classNameLower})
+    {
+        return RestResponse.success("修改成功",${classNameLower}Service.update${className}(${classNameLower}));
+    }
+
+    /**
+     * 删除${tableComment}
+     */
+	@DeleteMapping("/{${isPkJavaField}s}")
+    public RestResponse remove(@PathVariable ${isPkJavaType}[] ${isPkJavaField}s)
+    {
+        return RestResponse.success("删除成功",${classNameLower}Service.delete${className}By${isPkJavaFieldAttrName}s(${isPkJavaField}s));
+    }
+}
+
+```
+
+主要修改了返回值，返回类型。
+
+**测试**：
+
+**新增**：post请求：
+
+```js
+localhost:8080/book_info
+```
+
+```json
+{
+    "bookName": "第七天",
+    "bookAuthor": "余华",
+    "bookTotal": 100,
+    "bookPrice": 29.1,
+    "bookImage": null,
+    "bookShelfId": 1,
+    "createBy": "荔枝",
+    "isDelete": 0,
+    "createTime": "2024-10-12T03:06:41.000+00:00",
+    "updateTime": "2024-10-12T03:06:43.000+00:00"
+}
+```
+
+![image-20241014105736099](./assets/image-20241014105736099.png)
+
+**修改**：put请求：
+
+```js
+localhost:8080/book_info
+```
+
+```json
+{
+    "bookId":2,
+    "bookName": "活着",
+    "bookAuthor": "余华",
+    "bookTotal": 100,
+    "bookPrice": 30,
+    "bookImage": null,
+    "bookShelfId": 1,
+    "createBy": "YY",
+    "isDelete": 0,
+    "createTime": "2024-10-12T03:06:41.000+00:00",
+    "updateTime": "2024-10-12T03:06:43.000+00:00"
+}
+```
+
+![image-20241014105835965](./assets/image-20241014105835965.png)
+
+**详细信息**：get请求：
+
+```js
+localhost:8080/book_info/1
+```
+
+![image-20241014105857186](./assets/image-20241014105857186.png)
+
+**列表**：get请求：
+
+```
+localhost:8080/book_info/list?bookName=活着
+```
+
+![image-20241014105925101](./assets/image-20241014105925101.png)
+
+**删除**：delete请求：
+
+自行测试。
+
+
+
+#### 2.新增swagger测试接口
+
+1. 添加依赖：
+
+   ```xml
+           <dependency>
+               <groupId>com.github.xiaoymin</groupId>
+               <artifactId>knife4j-spring-boot-starter</artifactId>
+               <version>3.0.3</version>
+           </dependency>
+   ```
+
+2. 编写config：
+
+   ```java
+   port com.fasterxml.classmate.TypeResolver;
+   import com.github.xiaoymin.knife4j.spring.annotations.EnableKnife4j;
+   import io.swagger.annotations.ApiOperation;
+   import org.springframework.beans.factory.annotation.Autowired;
+   import org.springframework.context.annotation.Bean;
+   import org.springframework.context.annotation.Configuration;
+   import org.springframework.core.env.Environment;
+   import org.springframework.core.env.Profiles;
+   import springfox.documentation.builders.ApiInfoBuilder;
+   import springfox.documentation.builders.PathSelectors;
+   import springfox.documentation.builders.RequestHandlerSelectors;
+   import springfox.documentation.service.ApiInfo;
+   import springfox.documentation.service.Contact;
+   import springfox.documentation.spi.DocumentationType;
+   import springfox.documentation.spring.web.plugins.Docket;
+   import springfox.documentation.swagger2.annotations.EnableSwagger2;
+   
+   /**
+    * 作用: 自动生成API文档和在线接口调试工具
+    */
+   
+   @Configuration
+   //该注解是Springfox-swagger框架提供的使用Swagger注解，该注解必须加
+   @EnableSwagger2
+   //knife4j提供的增强扫描注解,Ui提供了例如动态参数、参数过滤、接口排序等增强功能
+   @EnableKnife4j
+   public class Knife4jConfig {
+   
+       /**
+        *     创建一个Docket的对象，相当于是swagger的一个实例 ： 配置开发和测试环境下开启Swagger，生产发布时关闭
+        *
+        *     RequestHandlerSelectors,配置要扫描接口的方式
+        *     basePackage：指定扫描的包路径
+        *     any：扫描全部
+        *     none：全部不扫描
+        *     withClassAnnotation:扫描类上的注解，如RestController
+        *     withMethodAnnotation:扫描方法上的注解，如GetMapping
+        *
+        * @return
+        */
+       @Autowired
+       TypeResolver typeResolver;
+       @Bean
+       public Docket createRestApi(Environment environment)
+       {
+           //设置显示的swagger环境信息,判断是否处在自己设定的环境当中,为了安全生产环境不开放Swagger
+           Profiles profiles=Profiles.of("dev","test");
+           boolean flag=environment.acceptsProfiles(profiles);
+           //创建一个Docket的对象，相当于是swagger的一个实例
+           return new Docket(DocumentationType.SWAGGER_2)
+                   .useDefaultResponseMessages(false)
+                   .groupName("1.x版本")
+                   .apiInfo(apiInfo())
+                   //只有当springboot配置文件为dev或test环境时，才开启swaggerAPI文档功能
+                   .enable(flag)
+                   .select()
+                   // 这里指定Controller扫描包路径:设置要扫描的接口类，一般是Controller类
+                   .apis(RequestHandlerSelectors.basePackage("com.lz.crud_generator.generate.controller"))  //这里采用包扫描的方式来确定要显示的接口
+                   .apis(RequestHandlerSelectors.withMethodAnnotation(ApiOperation.class)) //这里采用包含注解的方式来确定要显示的接口
+                   // 配置过滤哪些，设置对应的路径才获取
+                   .paths(PathSelectors.any())
+                   .build();
+       }
+   
+       ///配置相关的api信息
+       private ApiInfo apiInfo()
+       {
+           return new ApiInfoBuilder()
+                   .description("API调试文档")
+                   //作者信息
+                   .contact(new Contact("荔枝", "http://localhost:8080/doc.html", "321@qq.com"))
+                   .version("v1.0")
+                   .title("API文档")
+                   //服务Url
+                   .termsOfServiceUrl("http://localhost:8080")
+                   .build();
+       }
+   ```
+
+3. 开启支持swagger：
+
+   在这里我们把配置文件分开了，
+
+   当前文件为：**application.yml**:
+
+   ```
+   # 开发环境配置
+   server:
+     # 服务器的HTTP端口，默认为8080
+     port: 8080
+   spring:
+     # 默认 test 环境
+     profiles:
+       active: test
+     # 支持 swagger3
+     mvc:
+       pathmatch:
+         matching-strategy: ant_path_matcher
+   ```
+
+   **application-test.yml**:
+
+   ```
+   # 数据源配置
+   spring:
+     datasource:
+       type: com.alibaba.druid.pool.DruidDataSource
+       driverClassName: com.mysql.cj.jdbc.Driver
+       url: jdbc:mysql://localhost:3306/syy_lz_generator?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8
+       username: root
+       password: yy0908..
+   
+   # MyBatis配置
+   mybatis:
+     # 搜索指定包别名
+     typeAliasesPackage: com.lz.**.model
+     # 配置mapper的扫描，找到所有的mapper.xml映射文件
+     mapperLocations: classpath*:mapper/**/*Mapper.xml
+     # 加载全局的配置文件
+     configLocation: classpath:mybatis/mybatis-config.xml
+   ```
+
+   ![image-20241014115823933](./assets/image-20241014115823933.png)
+
+ 4. 为需要的接口添加
+
+    ![image-20241014120027901](./assets/image-20241014120027901.png)
+
+5. 测试
+
+   ![image-20241014120111253](./assets/image-20241014120111253.png)
