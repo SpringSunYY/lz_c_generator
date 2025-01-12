@@ -18,9 +18,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 
 /**
  * @Project: crud_generator
@@ -87,13 +85,13 @@ public class genTableTest {
 
         //文件输出位置
         String projectPath = System.getProperty("user.dir");
-        String[] packagePaths = MyStrUtils.split(packageName,".");
+        String[] packagePaths = MyStrUtils.split(packageName, ".");
         StringBuilder packagePath = new StringBuilder();
         for (String s : packagePaths) {
             System.out.println(s);
             packagePath.append(s).append(File.separator);
         }
-        String outputPath = projectPath + File.separator + "src" + File.separator + "main" + File.separator + "resources" + File.separator + "generated" + File.separator + packagePath + className+".java";
+        String outputPath = projectPath + File.separator + "src" + File.separator + "main" + File.separator + "resources" + File.separator + "generated" + File.separator + packagePath + className + ".java";
         // 创建文件对象
         File outputFile = new File(outputPath);
 
@@ -112,8 +110,40 @@ public class genTableTest {
     }
 
     @Test
-    public void genTable(){
+    public void genTable() {
         GenTable genTable = genTableService.initTableInfo("book_info");
         VelocityUtils.generateCode(genTable);
+    }
+
+    @Test
+    public void  generateTableValue() {
+        GenTable genTable = genTableService.initTableInfo("book_info");
+        System.out.println("genTable = " + genTable);
+        String insertTable = MyStrUtils.format("insert into {} (", genTable.tableName);
+        List<String> filed = new ArrayList<>();
+        List<GenTableColumn> columns = genTable.getColumns();
+        StringBuilder builder = new StringBuilder(insertTable);
+        Scanner scanner = new Scanner(System.in); // 移动到这里
+
+        for (int i = 0; i < columns.size(); i++) {
+            GenTableColumn column = columns.get(i);
+            System.out.println("当前字段：" + column.getColumnName() + "\t字段类型：" + column.getColumnType());
+            System.out.println("需要添加：1,不需要添加：2");
+
+            int require = scanner.nextInt();
+
+            if (require == 1) {
+                filed.add(column.getColumnKey());
+                if (i == columns.size() - 1) {
+                    builder.append(column.getColumnName()).append(",");
+                } else {
+                    builder.append(column.getColumnName());
+                }
+            }
+            scanner.next();
+        }
+
+        System.out.println("builder = " + builder);
+        scanner.close(); // 移到方法的最后
     }
 }

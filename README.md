@@ -3588,3 +3588,9 @@ localhost:8080/book_info/list?bookName=活着
 5. 测试
 
    ![image-20241014120111253](./assets/image-20241014120111253.png)
+
+## 第三部分：LZ-RuoYi-App代码生成器
+
+跳转此链接查看
+
+https://gitee.com/SpringSunYY/LZ-RuoYi-App
